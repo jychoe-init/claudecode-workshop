@@ -69,7 +69,7 @@ claude --settings .claude/profiles/regulated.json
    /doctor prompt-audit
    ```
 
-   결함 3종 가운데 하나를 선택해 Claude에게 수정시킨다: 사고 과정 출력 요구, 존재하지 않는 `make lint`, `.claude/rules/testing.md`와 모순되는 테스트 시점.
+   결함 3종 가운데 하나를 선택해 Claude에게 수정시킨다: '항상 step by step으로 신중히 생각하라'는 구모델용 지시, 존재하지 않는 `make lint`, `.claude/rules/testing.md`와 모순되는 테스트 시점.
 
    ```text
    방금 찾은 결함 중 하나를 최소 변경으로 고쳐 줘. 적용 전에 수정 이유를 한 문장으로 설명하고, 적용 뒤 관련 지침끼리 모순이 없는지 확인해 줘.
