@@ -30,7 +30,8 @@ class Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
             payload = json.loads(self.rfile.read(length) or b"{}")
         except (ValueError, json.JSONDecodeError):
-            self.send_error(400, "잘못된 JSON")
+            # 상태 줄은 latin-1로 인코딩되므로 사유는 ASCII로 쓴다.
+            self.send_error(400, "Bad JSON")
             return
         event = payload.get("hook_event_name", "unknown")
         message = payload.get("last_assistant_message", payload.get("text", ""))

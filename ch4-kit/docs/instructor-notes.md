@@ -5,6 +5,8 @@
 - [ ] `claude --version`으로 Claude Code 2.1.283 이상을 확인한다.
 - [ ] Node.js 18 이상, Python 3, `jq` 사용 가능 여부를 확인한다.
 - [ ] 강사 시연용 Slack Webhook URL을 준비하되 참가자 화면이나 저장소에 노출하지 않는다.
+- [ ] `CLAUDE.md`의 결함 ①은 "신중하게 생각하라" 수준으로 둔다. "생각한 과정을 먼저 출력하라"로 바꾸면 Opus 5.5(Bedrock)가 모든 요청을 `[reasoning_extraction]` 사유로 거절해 블록1 시작부터 세션이 멈춘다(2026-10-04 검증에서 확인). 결함을 변형하려면 리허설에서 `claude -p "한 줄로 인사해"`가 답하는지 먼저 본다.
+- [ ] 프로젝트 MCP(`.mcp.json`)는 첫 실행 때 승인 대화상자가 뜬다. 참가자에게 "hr 서버 승인"을 안내하고, `claude mcp list`에서 `⏸ Pending approval`이 보이면 `claude`를 한 번 실행해 승인하도록 한다.
 - [ ] `tools/slack_mock.py`가 사용할 127.0.0.1:8787 포트가 비어 있는지 확인한다.
 - [ ] Bedrock 환경에서 `/doctor prompt-audit`을 리허설한다. 이 명령은 번들 `/claude-api` 스킬을 경유한다.
 - [ ] `/skill-doctor` 실행에 feature-flag fetching이 필요한 환경인지 확인하고 시연 결과를 미리 캡처한다.
