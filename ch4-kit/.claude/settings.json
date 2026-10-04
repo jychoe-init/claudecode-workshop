@@ -1,16 +1,46 @@
 {
   "model": "sonnet",
   "permissions": {
-    "allow": ["Bash(npm test *)", "Bash(git status *)", "Bash(git log *)", "Bash(git diff *)", "Edit(docs/worksheets/**)", "mcp__hr__get_*"],
-    "ask": ["Edit(reports/**)", "Bash(git push *)", "mcp__hr__request_*"],
-    "deny": ["Read(.env*)", "Edit(.env*)", "Bash(rm *)", "Bash(curl *)", "Bash(wget *)", "WebFetch"]
+    "allow": [
+      "Bash(npm test *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(python3 -m json.tool *)",
+      "Edit(docs/worksheets/**)",
+      "mcp__hr__get_*"
+    ],
+    "ask": [
+      "Edit(reports/**)",
+      "Bash(git push *)",
+      "mcp__hr__request_*"
+    ],
+    "deny": [
+      "Read(.env*)",
+      "Edit(.env*)",
+      "Bash(rm *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "WebFetch"
+    ]
+  },
+  "sandbox": {
+    "network": {
+      "allowLocalBinding": true,
+      "allowedDomains": [
+        "REPLACE-AFTER-DEPLOY.cloudfront.net"
+      ]
+    }
   },
   "hooks": {
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [
-          {"type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-check.sh"}
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-check.sh"
+          }
         ]
       }
     ]

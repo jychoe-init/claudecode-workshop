@@ -4,6 +4,8 @@
 사용: python3 tools/hr_fetch.py me | leave | leave <직원> | requests | deploys
 환경: LAB_TOKEN (필수, .claude/settings.local.json 의 env), LAB_API_BASE (선택, 기본은 공용 주소)
 이 스크립트는 GET 만 한다. 변경(신청)은 하지 않는다 — 조회 전용이어야 allow 로 둘 수 있다.
+오류(토큰 없음·HTTP 오류·연결 실패)도 JSON 으로 stdout 에 내고 exit 0 — `!` 주입은 exit 가 0 이 아니면 스킬 전체가 중단되므로,
+스킬의 금지 줄("error 필드면 안내만")이 동작하려면 오류도 데이터로 전달해야 한다. 사용법 오류만 exit 2.
 """
 import json
 import os
@@ -26,7 +28,7 @@ def main(argv):
     base = os.environ.get("LAB_API_BASE", DEFAULT_BASE).rstrip("/")
     if not token:
         print(json.dumps({"error": "no_token", "message": "LAB_TOKEN 이 없습니다. bash tools/setup.sh 로 토큰을 등록하세요."}, ensure_ascii=False))
-        return 2
+        return 0
     req = urllib.request.Request(base + path, headers={"Authorization": f"Bearer {token}", "Accept": "application/json"})
     try:
         with urllib.request.urlopen(req, timeout=8) as r:
@@ -34,10 +36,10 @@ def main(argv):
             return 0
     except urllib.error.HTTPError as e:
         print(e.read().decode("utf-8", "replace") or json.dumps({"error": f"http_{e.code}"}))
-        return 1
+        return 0
     except (urllib.error.URLError, TimeoutError) as e:
         print(json.dumps({"error": "unreachable", "message": f"{base} 에 연결하지 못했습니다. LAB_API_BASE=http://127.0.0.1:8787 로 바꾸고 python3 tools/lab_server.py 를 켜세요.", "detail": str(e)}, ensure_ascii=False))
-        return 1
+        return 0
 
 
 if __name__ == "__main__":
