@@ -1,1 +1,0 @@
-{"permissions":{"defaultMode":"acceptEdits","allow":["Bash(npm test *)","Bash(npm run *)","Bash(git *)"],"deny":["Read(.env*)","Edit(.env*)"]}}

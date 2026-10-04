@@ -37,3 +37,4 @@ argument-hint: "[다듬을 요청문 초안]"
 요청문에 반복해서 쓸 문장을 설정으로 옮길 방법만 항목으로 쓴다. 예: `매번 .env 읽지 말라고 쓰는 대신 permissions.deny`, `신중히 → /effort high 또는 스킬 frontmatter effort`, `출력 형식 반복 → 스킬 템플릿`. 없으면 `- 없음`으로 쓴다.
 
 예시는 `${CLAUDE_SKILL_DIR}/examples.md`를 참고한다.
+스킬 스펙 문장(목적·입력·출력·금지)도 나에게 넣으면 모호한 곳을 집는다.

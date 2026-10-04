@@ -3,5 +3,6 @@ CLAUDE.local.md
 node_modules/
 usage.csv
 .hook.log
-received.log
-hr_requests.jsonl
+*_requests.jsonl
+__pycache__/
+.DS_Store
