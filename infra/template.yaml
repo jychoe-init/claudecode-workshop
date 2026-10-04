@@ -1,0 +1,182 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Claude Code Workshop - shared internal API (CloudFront + Lambda URL + DynamoDB + S3 docs)
+
+Parameters:
+  OriginSecret:
+    Type: String
+    NoEcho: true
+    Description: CloudFront -> Lambda 비밀 헤더 값. 직접 Lambda URL 호출을 막는다.
+  StackPrefix:
+    Type: String
+    Default: ccw-lab
+    AllowedPattern: "^[a-z][a-z0-9-]{2,20}$"
+  SlackTokenParam:
+    Type: String
+    Default: /ccw-lab/slack-bot-token
+    Description: Slack 봇 토큰이 들어 있는 SSM SecureString 이름. 관리자가 배포 후 직접 넣는다.
+
+Resources:
+  Table:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${StackPrefix}-api"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  FnRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: table
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [dynamodb:GetItem, dynamodb:PutItem, dynamodb:UpdateItem, dynamodb:Query]
+                Resource: !GetAtt Table.Arn
+              - Effect: Allow
+                Action: [ssm:GetParameter]
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${SlackTokenParam}"
+
+  Fn:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "${StackPrefix}-api"
+      Runtime: python3.12
+      Handler: handler.handler
+      Role: !GetAtt FnRole.Arn
+      Timeout: 10
+      MemorySize: 256
+      Code: ./lambda            # `aws cloudformation package` 가 S3로 올린다
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Table
+          ORIGIN_SECRET: !Ref OriginSecret
+          SLACK_TOKEN_PARAM: !Ref SlackTokenParam
+
+  FnUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt Fn.Arn
+      AuthType: NONE
+
+  FnUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Fn
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${StackPrefix}-site-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub "${SiteBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}"
+
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${StackPrefix}-site-oac"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AuthCheck:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub "${StackPrefix}-auth-check"
+      AutoPublish: true
+      FunctionConfig: { Comment: Bearer token format check for /v1/*, Runtime: cloudfront-js-2.0 }
+      FunctionCode: |
+        function handler(event) {
+          var req = event.request;
+          var h = req.headers.authorization;
+          var ok = h && /^Bearer lab-[a-z0-9]{8}$/.test(h.value);
+          if (!ok) {
+            return { statusCode: 401, statusDescription: 'Unauthorized',
+              headers: { 'content-type': { value: 'application/json; charset=utf-8' } },
+              body: '{"error":"unauthorized","message":"Authorization: Bearer lab-xxxxxxxx 헤더가 필요합니다."}' };
+          }
+          return req;
+        }
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub "${StackPrefix} workshop API + docs"
+        HttpVersion: http2and3
+        PriceClass: PriceClass_200
+        DefaultRootObject: index.html
+        Origins:
+          - Id: site
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginAccessControlId: !GetAtt OAC.Id
+            S3OriginConfig: { OriginAccessIdentity: "" }
+          - Id: api
+            DomainName: !Select [2, !Split ["/", !GetAtt FnUrl.FunctionUrl]]
+            CustomOriginConfig: { OriginProtocolPolicy: https-only, OriginSSLProtocols: [TLSv1.2] }
+            OriginCustomHeaders:
+              - { HeaderName: x-lab-origin, HeaderValue: !Ref OriginSecret }
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD]
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6   # CachingOptimized
+          Compress: true
+        CacheBehaviors:
+          - PathPattern: /v1/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad      # CachingDisabled
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # AllViewerExceptHostHeader
+            FunctionAssociations:
+              - { EventType: viewer-request, FunctionARN: !GetAtt AuthCheck.FunctionMetadata.FunctionARN }
+
+Outputs:
+  BaseUrl:
+    Value: !Sub "https://${Distribution.DomainName}"
+  TableName:
+    Value: !Ref Table
+  SiteBucket:
+    Value: !Ref SiteBucket
+  FunctionUrl:
+    Value: !GetAtt FnUrl.FunctionUrl
+    Description: 직접 호출은 비밀 헤더가 없어 403. CloudFront 주소를 쓴다.

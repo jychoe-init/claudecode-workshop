@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>워크샵 사내 API · 문서</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 15px/1.6 -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 24px; } h2 { font-size: 18px; margin-top: 36px; border-bottom: 1px solid #8884; padding-bottom: 6px; }
+  code, pre { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  pre { background: #8881; padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #8884; vertical-align: top; }
+  .note { background: #ffa5001a; border-left: 3px solid orange; padding: 8px 12px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<h1>워크샵 사내 API</h1>
+<p>Claude Code 워크샵 실습용 가짜 HR·배포 시스템입니다. 모든 데이터는 가짜이며 토큰마다 다른 팀이 보입니다.
+기본 주소는 이 페이지의 주소와 같습니다(<code>https://&lt;이 호스트&gt;/v1/...</code>).</p>
+
+<div class="note">인증: 모든 <code>/v1/*</code> 요청에 <code>Authorization: Bearer lab-xxxxxxxx</code> 헤더. 토큰은 배부받은 것을 쓰고, 저장소에 커밋하지 않습니다(<code>.claude/settings.local.json</code>의 <code>env.LAB_TOKEN</code>).</div>
+
+<h2>엔드포인트</h2>
+<table>
+<tr><th>메서드·경로</th><th>설명</th><th>응답 예</th></tr>
+<tr><td><code>GET /v1/me</code></td><td>내 토큰의 팀과 구성원</td><td><pre>{"token_hint":"lab-…","team":"payments",
+ "members":[{"employee":"kim","role":"backend"}, …]}</pre></td></tr>
+<tr><td><code>GET /v1/leave</code></td><td>팀 연차 현황</td><td><pre>{"team":"payments","as_of":"2026-10-20",
+ "balances":[{"employee":"kim","role":"backend",
+   "annual":15,"used":6,"remaining":9}, …]}</pre></td></tr>
+<tr><td><code>GET /v1/leave/{직원}</code></td><td>구성원 한 명의 연차</td><td><pre>{"team":"payments","employee":"kim",
+ "annual":15,"used":6,"remaining":9}</pre></td></tr>
+<tr><td><code>GET /v1/leave/requests</code></td><td>내 토큰으로 넣은 신청 목록</td><td><pre>{"team":"payments","requests":[…]}</pre></td></tr>
+<tr><td><code>POST /v1/leave/requests</code></td><td>연차 신청(변경 동작). 본문 <code>{"employee","date","days"}</code></td><td><pre>201 {"request_id":"REQ-01234","employee":"kim",
+ "date":"2026-10-30","days":1,"status":"pending"}</pre></td></tr>
+<tr><td><code>GET /v1/deploys</code></td><td>서비스별 배포 상태(개발 트랙용)</td><td><pre>{"team":"payments","deploys":[{"service":"order-api",
+ "version":"v3.12.4","status":"healthy", …}]}</pre></td></tr>
+</table>
+
+<h2>오류</h2>
+<table>
+<tr><th>코드</th><th>뜻</th></tr>
+<tr><td>401 <code>unauthorized</code></td><td>헤더가 없거나 토큰 형식이 아님</td></tr>
+<tr><td>403 <code>invalid_token</code></td><td>등록되지 않았거나 만료된 토큰</td></tr>
+<tr><td>404 <code>unknown_employee</code></td><td>내 팀 구성원이 아님</td></tr>
+<tr><td>409 <code>insufficient_balance</code></td><td>잔여(대기 중 포함)보다 많이 신청</td></tr>
+<tr><td>429 <code>rate_limited</code></td><td>토큰당 분당 60회 초과</td></tr>
+</table>
+
+<h2>Claude Code 스킬에서 쓰기</h2>
+<p>킷의 <code>tools/hr_fetch.py</code>가 이 API를 호출해 JSON을 출력합니다. 스킬 첫 줄에서 주입하면 됩니다.</p>
+<pre>!`python3 tools/hr_fetch.py leave`        # GET /v1/leave
+!`python3 tools/hr_fetch.py deploys`      # GET /v1/deploys
+!`python3 tools/hr_fetch.py me`</pre>
+<p>킷 기본 울타리가 <code>curl</code>을 차단하므로 스크립트로 호출합니다. 스크립트는 조회(GET)만 합니다.
+공용 주소가 막히면 <code>LAB_API_BASE=http://127.0.0.1:8787</code>로 바꾸고 <code>python3 tools/lab_server.py</code>를 켜면 같은 응답을 받습니다.</p>
+
+<h2>터미널에서 확인(참고)</h2>
+<pre>python3 - &lt;&lt;'EOF'
+import json, os, urllib.request
+req = urllib.request.Request(os.environ.get("LAB_API_BASE", "https://이-호스트") + "/v1/me",
+                             headers={"Authorization": "Bearer " + os.environ["LAB_TOKEN"]})
+print(json.dumps(json.load(urllib.request.urlopen(req)), ensure_ascii=False, indent=2))
+EOF</pre>
+</body>
+</html>
