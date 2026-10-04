@@ -1,0 +1,7 @@
+.claude/settings.local.json
+CLAUDE.local.md
+node_modules/
+usage.csv
+.hook.log
+received.log
+hr_requests.jsonl

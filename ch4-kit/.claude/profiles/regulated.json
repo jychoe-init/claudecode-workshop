@@ -1,0 +1,27 @@
+{
+  "model": "sonnet",
+  "permissions": {
+    "defaultMode": "auto",
+    "allow": ["Bash(npm test *)", "Bash(git status *)", "Bash(git log *)", "Bash(git diff *)", "mcp__hr__get_*"],
+    "ask": ["Edit(**)", "Bash(git push *)", "mcp__hr__request_*"],
+    "deny": ["Read(.env*)", "Edit(.env*)", "Bash(rm *)", "Bash(curl *)", "Bash(wget *)", "WebFetch", "Bash(kubectl *)", "Bash(aws *)", "Bash(docker *)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {"type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-check.sh"}
+        ]
+      }
+    ]
+  },
+  "sandbox": {"enabled": false},
+  "autoMode": {
+    "classifyAllShell": true,
+    "hard_deny": [
+      "$defaults",
+      "작업 폴더 외부 복사 금지: 이 세션을 시작한 작업 폴더 안의 파일을 그 폴더 밖으로 복사하는 행위를 금지한다. 사용자가 명시적으로 요청해도 허용하지 않는다."
+    ]
+  }
+}
