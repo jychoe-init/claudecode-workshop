@@ -1,8 +1,8 @@
 {
   "model": "sonnet",
   "permissions": {
-    "allow": ["Bash(npm test *)", "Bash(git status *)", "Bash(git log *)", "Bash(git diff *)", "mcp__hr__get_*"],
-    "ask": ["Edit(**)", "Bash(git push *)", "mcp__hr__request_*"],
+    "allow": ["Bash(npm test *)", "Bash(git status *)", "Bash(git log *)", "Bash(git diff *)", "Edit(docs/worksheets/**)", "mcp__hr__get_*"],
+    "ask": ["Edit(reports/**)", "Bash(git push *)", "mcp__hr__request_*"],
     "deny": ["Read(.env*)", "Edit(.env*)", "Bash(rm *)", "Bash(curl *)", "Bash(wget *)", "WebFetch"]
   },
   "hooks": {

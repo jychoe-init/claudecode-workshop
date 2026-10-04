@@ -1,21 +1,23 @@
 #!/usr/bin/env bash
 # 슈퍼랩 준비 스크립트 — 킷 폴더(ch4-kit) 안에서 한 번 실행한다.
 # 1) Claude Code 버전(2.1.283 이상)·node·python3 확인
-# 2) Git 이력 확인 — 클론한 저장소의 커밋이 블록2 /standup의 git log 주입과
-#    블록3 /pr-desc의 diff 주입에 쓰인다. 클론이 아닌 복사본이면 초기화해 커밋 2개를 만든다.
+# 2) Git 이력 확인 (클론한 커밋이 /standup·/pr-desc 의 재료)
+# 3) 참가자 토큰(LAB_TOKEN)을 .claude/settings.local.json 의 env 에 저장 — 커밋되지 않는 파일
 set -u
+
+LOCAL=".claude/settings.local.json"
 
 need=2.1.283
 ver=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 if [[ -z "$ver" ]]; then
   echo "claude 명령을 찾지 못했습니다. Claude Code 설치와 PATH를 확인하세요."
 elif [[ "$(printf '%s\n%s\n' "$need" "$ver" | sort -V | head -1)" != "$need" ]]; then
-  echo "Claude Code $ver — 블록1의 /doctor prompt-audit 에는 $need 이상이 필요합니다. 업데이트 후 진행하세요."
+  echo "Claude Code $ver — lab3의 /doctor prompt-audit 에는 $need 이상이 필요합니다. 그 단계만 강사 화면으로 봅니다."
 else
   echo "Claude Code $ver 확인"
 fi
 node --version >/dev/null 2>&1 && echo "node $(node --version) 확인" || echo "node 없음: Node.js 18 이상을 설치하세요."
-python3 --version >/dev/null 2>&1 && echo "$(python3 --version) 확인" || echo "python3 없음: 블록2 도구(hr_mcp.py, slack_mock.py)에 필요합니다."
+python3 --version >/dev/null 2>&1 && echo "$(python3 --version) 확인" || echo "python3 없음: tools/ 스크립트에 필요합니다."
 command -v jq >/dev/null 2>&1 && echo "jq 확인" || echo "jq 없음(선택): 훅 스크립트는 python3로 대체 동작합니다."
 
 if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
@@ -24,12 +26,42 @@ else
   git init -q
   git config user.name  >/dev/null 2>&1 || git config user.name  "lab"
   git config user.email >/dev/null 2>&1 || git config user.email "lab@example.com"
-  git add -A -- . ':!samples'
-  git commit -q -m "chore: team starter kit scaffold"
-  git add -A samples
-  git commit -q -m "feat: add meeting and weekly-report samples"
+  git add -A -- . ':!samples' && git commit -q -m "chore: team starter kit scaffold"
+  git add -A samples && git commit -q -m "feat: add meeting and weekly-report samples"
   echo "Git 초기화 완료: 커밋 2개"
 fi
 
+# ---- 토큰 등록 (settings.local.json 은 .gitignore 로 커밋 제외) ----
+existing=$(python3 - "$LOCAL" <<'PY' 2>/dev/null
+import json, sys
+try:
+    print(json.load(open(sys.argv[1])).get("env", {}).get("LAB_TOKEN", ""))
+except Exception:
+    print("")
+PY
+)
+if [[ -n "$existing" ]]; then
+  echo "토큰 등록됨: ${existing:0:4}… (바꾸려면 $LOCAL 의 env.LAB_TOKEN 을 수정)"
+else
+  read -r -p "배부받은 참가자 토큰(lab-xxxxxxxx)을 입력하세요 [건너뛰기: Enter]: " token
+  if [[ "$token" =~ ^lab-[a-z0-9]{8}$ ]]; then
+    LAB_TOKEN="$token" python3 - "$LOCAL" <<'PY'
+import json, os, sys
+p = sys.argv[1]
+try:
+    d = json.load(open(p))
+except Exception:
+    d = {}
+d.setdefault("env", {})["LAB_TOKEN"] = os.environ["LAB_TOKEN"]
+json.dump(d, open(p, "w"), ensure_ascii=False, indent=2)
+PY
+    echo "토큰 저장: $LOCAL (커밋 제외 파일)"
+  elif [[ -n "$token" ]]; then
+    echo "형식이 다릅니다(lab- 뒤 소문자·숫자 8자). 나중에 다시 실행하세요."
+  else
+    echo "토큰을 건너뛰었습니다. lab2 전에 다시 실행하세요."
+  fi
+fi
+
 npm test 2>/dev/null | tail -1
-echo "준비 완료. 이제 'claude'를 실행하고 /status 로 설정 소스를 확인하세요."
+echo "준비 완료. 이제 'claude'를 실행하고 /status 로 설정 소스를 확인한 뒤 /workshop-coach lab1 로 시작하세요."

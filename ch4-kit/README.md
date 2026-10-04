@@ -1,55 +1,80 @@
-# Ch4 팀 스타터 킷
+# Claude Code 팀 스타터 킷
 
-팀이 Claude Code의 울타리, 연결 도구, 반복 스킬, 점검·공유 흐름을 60분에 완성하는 실습 킷입니다.
-완성본을 실행한 뒤 한 곳을 팀 상황에 맞게 바꾸고 DoD로 확인합니다.
-판단은 사람이 먼저 하고 구현은 Claude에게 맡깁니다.
+내 반복 작업을 스킬로 만들고 사내 API에 연결한 뒤, 팀에 공유할 상태까지 점검하는 워크샵 킷입니다.
+판단은 참가자가 하고 구현은 Claude에게 맡깁니다.
+토큰과 로컬 설정은 저장소에 올리지 않습니다.
 
 ## 요구 환경
 
-- Claude Code 2.1.283 이상 (`/doctor prompt-audit` 최소 버전)
-- Node.js 18 이상, Python 3
-- `jq` 권장
+- Claude Code 2.1.283 이상
+- Node.js
+- Python 3
+- 배부받은 `LAB_TOKEN`
 
 ## 시작
 
 ```bash
 git clone https://github.com/jychoe-init/claudecode-workshop.git ~/claude-lab
 cd ~/claude-lab/ch4-kit
-bash tools/setup.sh   # 버전·도구 점검 + Git 이력 확인 (한 번만)
+bash tools/setup.sh
 claude
 ```
 
-Claude 세션에서 `/status`를 실행해 프로젝트와 설정을 확인합니다.
+Claude Code에서 프로젝트와 설정을 확인합니다.
+
+```text
+/status
+```
+
+## 세 랩
+
+| 랩 | 한 줄 목표 | 시작 |
+|---|---|---|
+| lab1 · 반복작업 | 내 입력, 양식, 금지가 담긴 스킬을 만듭니다. | `/workshop-coach lab1` |
+| lab2 · 연결 | 사내 API 데이터를 내 팀 양식의 보고로 정리하는 스킬을 만듭니다. | `/workshop-coach lab2` |
+| lab3 · 점검·배포 | 지시문과 effort를 점검하고 안전한 커밋을 만듭니다. | `/workshop-coach lab3` |
+
+첫 랩은 아래 명령으로 시작합니다.
+
+```text
+/workshop-coach lab1
+```
 
 ## 디렉터리 지도
 
 | 위치 | 역할 |
 |---|---|
-| `CLAUDE.md`, `.claude/rules/` | 팀 행동 안내와 경로별 규칙 |
-| `.claude/settings.json`, `.claude/profiles/` | 권한·훅·실행 프리셋 |
-| `.claude/skills/` | 반복 작업을 명령과 참조 지식으로 표준화 |
-| `.mcp.json`, `tools/` | HR MCP와 로컬 훅 실습 도구 |
-| `samples/`, `src/` | 회의·주간 메모와 코드 실습 재료 |
-| `docs/blocks/`, `docs/solutions/` | 블록별 가이드와 막힐 때 보는 완성본 |
+| `CLAUDE.md`, `.claude/rules/` | 팀 공통 안내와 파일별 규칙 |
+| `.claude/settings.json` | 권한과 훅 설정 |
+| `.claude/skills/` | 반복 작업 스킬과 워크샵 코치 |
+| `.mcp.json`, `tools/hr_mcp.py` | 강사 시연용 HR MCP |
+| `tools/hr_fetch.py`, `tools/lab_server.py` | API 조회와 로컬 대체 서버 |
+| `tools/usage_log.sh` | effort와 응답 길이 기록 |
+| `docs/labs/` | 참가자 안내문 |
+| `docs/worksheets/` | 내 결정과 이유 기록 |
+| `docs/solutions/` | 막힐 때 확인하는 완성본 |
+| `samples/`, `src/` | 실습 입력과 코드 |
 
-## 스킬 6종 + 내장 명령 1
+## 스킬
 
-| 스킬 | 한 줄 사용 예시 |
-|---|---|
-| standup | `/standup "PR 리뷰 2건"` |
-| prompt-coach | `/prompt-coach "우리 서비스 로그 보고 문제 있는지 찾아줘"` |
-| pr-desc | `/pr-desc` |
-| review-checklist | `이 변경을 리뷰해줘` |
-| meeting-notes | `/meeting-notes samples/meeting-2026-10-02.txt` |
-| weekly-report | `/weekly-report samples/weekly-memo.md` |
-| prompt-audit | `/doctor prompt-audit` |
+| 스킬 | 워크샵 안 역할 | 사용 예 |
+|---|---|---|
+| `meeting-notes` | lab1 길 A 출발점 | `/meeting-notes samples/meeting-2026-10-02.txt` |
+| `weekly-report` | lab1 길 A 출발점 | `/weekly-report samples/weekly-memo.md` |
+| `standup` | lab1 길 A 출발점 | `/standup "오늘 한 일"` |
+| `pr-desc` | lab1 길 A 출발점 | `/pr-desc` |
+| `review-checklist` | 참조형 스킬 본보기 | 변경 리뷰 요청 |
+| `leave-report` | lab2 패턴 B 본보기 | `/leave-report` |
+| `prompt-coach` | 스펙 점검 본보기 | `/prompt-coach "내 스펙"` |
+| `workshop-coach` | 결정과 확인을 돕는 코치 | `/workshop-coach lab1` |
 
-## 프리셋 3종
+## 공용 API와 로컬 대체
 
-| 프리셋 | 용도 |
-|---|---|
-| personal | 개인 실험용: 편집과 개발 명령을 넓게 허용 |
-| team | 팀 기본값: 조회는 허용하고 편집·전송·신청은 승인 |
-| regulated | 규제 환경: 외부 복사와 인프라 명령을 추가 차단 |
+공용 API 문서: [워크샵 사내 API](https://REPLACE-AFTER-DEPLOY.cloudfront.net/)
 
-> 이 README는 블록4에서 Claude가 새 팀원이 5분 안에 이해하도록 다시 씁니다.
+공용 API를 쓸 수 없으면 로컬 서버를 켜고 `LAB_API_BASE`를 바꿉니다.
+
+```bash
+python3 tools/lab_server.py
+LAB_API_BASE=http://127.0.0.1:8787 claude
+```

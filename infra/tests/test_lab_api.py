@@ -67,20 +67,9 @@ check(f"{lab_api.RATE_LIMIT_PER_MIN}회 후 429", codes[:lab_api.RATE_LIMIT_PER_
 later = NOW + dt.timedelta(minutes=1)
 check("다음 분에는 다시 200", lab_api.handle("GET", "/v1/me", H(T2), None, fresh, later)[0] == 200)
 
-# Slack 연결·알림
-nstore = lab_api.MemoryStore(tokens={T1}); notifier = lab_api.LogNotifier()
-hk = lambda m, p, b=None, n=notifier: lab_api.handle(m, p, H(T1), json.dumps(b) if b is not None else None, nstore, NOW, notifier=n)  # noqa: E731
-check("notify 전 미연결 → 409", hk("POST", "/v1/notify", {"text": "hi"})[0] == 409)
-check("link 잘못된 이메일 → 400", hk("POST", "/v1/slack/link", {"email": "nope"})[0] == 400)
-check("notifier 없음 → 503", hk("POST", "/v1/slack/link", {"email": "a@b.co"}, None)[0] == 503)
-check("link 성공 → 200 linked", hk("POST", "/v1/slack/link", {"email": "A@B.co"})[1].get("linked") is True)
-check("GET link 상태", hk("GET", "/v1/slack/link")[1] == {"linked": True, "email": "a@b.co"})
-s_, r_ = hk("POST", "/v1/notify", {"hook_event_name": "Stop", "last_assistant_message": "### 어제\n- 커밋 2개"})
-check("훅 페이로드로 notify → 200 delivered", s_ == 200 and r_["delivered"] and notifier.sent[-1][1].startswith("### 어제"))
-check("text 로 notify → 200", hk("POST", "/v1/notify", {"text": "요약"})[0] == 200)
-check("빈 text → 400", hk("POST", "/v1/notify", {"text": "  "})[0] == 400)
-codes = [hk("POST", "/v1/notify", {"text": "x"})[0] for _ in range(lab_api.NOTIFY_LIMIT_PER_MIN)]
-check("notify 분당 한도 → 429", codes[-1] == 429, f"{codes.count(200)}건 200 후 429")
+# 제거된 경로는 404
+check("/v1/notify 는 404", lab_api.handle("POST", "/v1/notify", H(T1), "{}", lab_api.MemoryStore(tokens={T1}), NOW)[0] == 404)
+check("/v1/slack/link 는 404", lab_api.handle("POST", "/v1/slack/link", H(T1), "{}", lab_api.MemoryStore(tokens={T1}), NOW)[0] == 404)
 
 print(f"\nFAIL {fails}")
 sys.exit(1 if fails else 0)

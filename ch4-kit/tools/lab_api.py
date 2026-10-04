@@ -27,22 +27,11 @@ SERVICES = ["order-api", "web-front", "batch-settlement", "notification-worker",
 DEPLOY_STATUS = ["healthy", "healthy", "healthy", "degraded", "rolling-back"]
 
 
-NOTIFY_LIMIT_PER_MIN = 10
-
-
 class Store(Protocol):
     def token_exists(self, token: str) -> bool: ...
     def incr_rate(self, token: str, minute_key: str) -> int: ...
     def put_request(self, token: str, item: dict) -> None: ...
     def list_requests(self, token: str) -> list[dict]: ...
-    def get_link(self, token: str) -> Optional[dict]: ...          # {"slack_user_id","email"} 또는 None
-    def put_link(self, token: str, link: dict) -> None: ...
-
-
-class Notifier(Protocol):
-    """Slack 전송. Lambda 는 Slack Web API, 로컬 서버는 received.log."""
-    def lookup_user(self, email: str) -> Optional[str]: ...      # Slack user id 또는 None
-    def send_dm(self, slack_user_id: str, text: str) -> dict: ...  # {"ok": bool, "channel": str, "error": str}
 
 
 def mask(token: str) -> str:
@@ -110,7 +99,7 @@ def extract_token(headers: dict) -> Optional[str]:
 
 
 def handle(method: str, path: str, headers: dict, body: Optional[str], store: Store,
-           now: Optional[dt.datetime] = None, notifier: Optional["Notifier"] = None) -> tuple[int, dict]:
+           now: Optional[dt.datetime] = None) -> tuple[int, dict]:
     """(status, json_body). 경로는 /v1/... 만 받는다."""
     now = now or dt.datetime.now(dt.timezone.utc)
     path = path.rstrip("/") or "/"
@@ -146,46 +135,6 @@ def handle(method: str, path: str, headers: dict, body: Optional[str], store: St
         return _err(404, "unknown_employee", f"{emp}은(는) {team['team']} 팀 구성원이 아닙니다.")
     if method == "GET" and parts == ["deploys"]:
         return _resp(200, {"team": team["team"], "deploys": deploys_for(token)})
-    if parts == ["slack", "link"]:
-        if method == "GET":
-            link = store.get_link(token)
-            return _resp(200, {"linked": bool(link), "email": (link or {}).get("email")})
-        if method == "POST":
-            try:
-                email = (json.loads(body or "{}").get("email") or "").strip().lower()
-            except json.JSONDecodeError:
-                return _err(400, "bad_json", "본문이 JSON이 아닙니다.")
-            if "@" not in email:
-                return _err(400, "bad_email", "email 이 필요합니다.")
-            if notifier is None:
-                return _err(503, "slack_unavailable", "Slack 연동이 아직 준비되지 않았습니다.")
-            uid = notifier.lookup_user(email)
-            if not uid:
-                return _err(404, "slack_user_not_found", "워크샵 Slack 워크스페이스에서 이 이메일을 찾지 못했습니다. 먼저 가입하세요.")
-            store.put_link(token, {"slack_user_id": uid, "email": email, "linked_at": now.isoformat()})
-            return _resp(200, {"linked": True, "email": email})
-    if method == "POST" and parts == ["notify"]:
-        n = store.incr_rate(token, "notify#" + now.strftime("%Y%m%d%H%M"))
-        if n > NOTIFY_LIMIT_PER_MIN:
-            return _err(429, "rate_limited", f"알림은 분당 {NOTIFY_LIMIT_PER_MIN}회까지입니다.")
-        try:
-            data = json.loads(body or "{}")
-        except json.JSONDecodeError:
-            return _err(400, "bad_json", "본문이 JSON이 아닙니다.")
-        # Claude Code 훅 페이로드(last_assistant_message) 또는 {"text": ...} 모두 받는다
-        text = (data.get("text") or data.get("last_assistant_message") or "").strip()
-        if not text:
-            return _err(400, "empty_text", "text 또는 last_assistant_message 가 비어 있습니다.")
-        text = text[:3000]
-        link = store.get_link(token)
-        if not link:
-            return _err(409, "slack_not_linked", "먼저 POST /v1/slack/link 로 Slack 계정을 연결하세요.")
-        if notifier is None:
-            return _err(503, "slack_unavailable", "Slack 연동이 아직 준비되지 않았습니다.")
-        r = notifier.send_dm(link["slack_user_id"], text)
-        if not r.get("ok"):
-            return _err(502, "slack_error", f"Slack 전송 실패: {r.get('error', 'unknown')}")
-        return _resp(200, {"delivered": True, "to": "dm", "chars": len(text)})
     if method == "POST" and parts == ["leave", "requests"]:
         try:
             data = json.loads(body or "{}")
@@ -219,7 +168,6 @@ class MemoryStore:
         self.tokens = tokens
         self.rate: dict[str, int] = {}
         self.requests: dict[str, list[dict]] = {}
-        self.links: dict[str, dict] = {}
 
     def token_exists(self, token: str) -> bool:
         return True if self.tokens is None else token in self.tokens
@@ -234,29 +182,3 @@ class MemoryStore:
 
     def list_requests(self, token: str) -> list[dict]:
         return list(self.requests.get(token, []))
-
-    def get_link(self, token: str) -> Optional[dict]:
-        return self.links.get(token)
-
-    def put_link(self, token: str, link: dict) -> None:
-        self.links[token] = link
-
-
-class LogNotifier:
-    """로컬 서버·테스트용: Slack 대신 파일(또는 리스트)에 기록한다. 어떤 이메일이든 연결을 허용한다."""
-
-    def __init__(self, log_path=None):
-        self.log_path = log_path
-        self.sent: list[tuple[str, str]] = []
-
-    def lookup_user(self, email: str) -> Optional[str]:
-        return "U-LOCAL-" + hashlib.sha1(email.encode()).hexdigest()[:6]
-
-    def send_dm(self, slack_user_id: str, text: str) -> dict:
-        self.sent.append((slack_user_id, text))
-        line = f"[Slack DM → {slack_user_id}] {text}"
-        print(line, flush=True)
-        if self.log_path:
-            with open(self.log_path, "a", encoding="utf-8") as fh:
-                fh.write(line + "\n")
-        return {"ok": True, "channel": slack_user_id}
