@@ -2,7 +2,7 @@
 description: 슈퍼랩 진행 코치. 목표 설명, 결정 안내, 요청 시 힌트, 결과 확인을 맡는다. 참가자가 /workshop-coach lab1|lab2|lab3 으로 부를 때만 시작
 disable-model-invocation: true
 argument-hint: "[lab1 | lab2 | lab3]"
-allowed-tools: Read, Write(docs/worksheets/**), Bash(python3 *), Bash(git status *), Bash(git diff *), Bash(git log *)
+allowed-tools: Read, Write(docs/worksheets/**), Bash(python3 -m json.tool *), Bash(git status *), Bash(git diff *), Bash(git log *)
 ---
 
 # workshop-coach

@@ -4,6 +4,8 @@ disable-model-invocation: true
 argument-hint: "[비고 한 줄, 생략 가능]"
 effort: low
 ---
+<!-- 바꿀 곳(결정 3): 아래 주입 명령의 사전 승인을 어디에 둘지 정합니다. 이 frontmatter에 `allowed-tools: Bash(python3 tools/hr_fetch.py *)` 한 줄을 넣거나,
+     .claude/settings.json permissions.allow에 같은 규칙을 넣습니다. 둘 다 없으면 첫 실행이 중단됩니다(승인 창 없음). -->
 
 !`python3 tools/hr_fetch.py leave`
 <!-- 바꿀 곳: 바로 위 조회 종류를 leave 또는 deploys로 바꿉니다. -->
