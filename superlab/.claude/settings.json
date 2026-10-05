@@ -40,7 +40,6 @@
       "Edit(.claude/skills/review-checklist/**)",
       "Edit(.claude/skills/leave-report/**)",
       "Edit(.claude/skills/prompt-coach/**)",
-      "Edit(.claude/skills/workshop-coach/**)",
       "Edit(tools/hr_fetch.py)",
       "Bash(rm *)",
       "Bash(curl *)",
