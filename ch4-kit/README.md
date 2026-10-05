@@ -59,10 +59,10 @@ Claude Code에서 프로젝트와 설정을 확인합니다.
 
 | 스킬 | 워크샵 안 역할 | 사용 예 |
 |---|---|---|
-| `meeting-notes` | lab1 출발점 ⓐ 회의록 | `/meeting-notes samples/meeting-2026-10-02.txt` |
-| `weekly-report` | lab1 출발점 ⓑ 주간보고 | `/weekly-report samples/weekly-memo.md` |
-| `standup` | lab1 출발점 ⓒ 스탠드업 | `/standup "오늘 한 일"` |
-| `pr-desc` | lab1 출발점 ⓓ PR 설명 | `/pr-desc` |
+| `meeting-notes` | lab1 출발점 a 회의록 | `/meeting-notes samples/meeting-2026-10-02.txt` |
+| `weekly-report` | lab1 출발점 b 주간보고 | `/weekly-report samples/weekly-memo.md` |
+| `standup` | lab1 출발점 c 스탠드업 | `/standup "오늘 한 일"` |
+| `pr-desc` | lab1 출발점 d PR 설명 | `/pr-desc` |
 | `review-checklist` | 참조형 스킬 본보기 | 변경 리뷰 요청 |
 | `leave-report` | lab2 패턴 B 본보기 | `/leave-report` |
 | `prompt-coach` | 스펙 점검 본보기 | `/prompt-coach "내 스펙"` |

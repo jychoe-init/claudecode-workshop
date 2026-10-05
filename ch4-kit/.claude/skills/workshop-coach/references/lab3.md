@@ -14,10 +14,10 @@
 단계 1/5 · 출발점
 <목표 2줄>
 CLAUDE.md에서 찾은 결함 세 개입니다. 우리 팀 CLAUDE.md에도 생길 법한 것 하나를 고르면 그 줄을 고칩니다.
-ⓐ 9행 "어떤 요청이든 답하기 전에 항상 step by step으로 깊고 신중하게 생각하라" → 요즘 모델에는 효과가 없다. 지우고, 깊이는 다음 단계의 `effort`로   (추천: 거의 모든 팀 CLAUDE.md에 있는 줄)
-ⓑ 10행 "커밋 전 반드시 `make lint`를 실행한다" → Makefile이 없어 실행하려다 실패한다. `npm test`로 고친다
-ⓒ 11행 "테스트는 수정 요청이 있을 때만 실행한다" → `.claude/rules/testing.md`의 "항상 npm test"와 모순. 11행을 지운다(규칙 파일이 이긴다)
-ⓐ처럼 한 글자로 답해 주세요. 다르게 고치고 싶으면 그 문장을 말해 주세요.
+a) 9행 "어떤 요청이든 답하기 전에 항상 step by step으로 깊고 신중하게 생각하라" → 요즘 모델에는 효과가 없다. 지우고, 깊이는 다음 단계의 `effort`로   (추천: 거의 모든 팀 CLAUDE.md에 있는 줄)
+b) 10행 "커밋 전 반드시 `make lint`를 실행한다" → Makefile이 없어 실행하려다 실패한다. `npm test`로 고친다
+c) 11행 "테스트는 수정 요청이 있을 때만 실행한다" → `.claude/rules/testing.md`의 "항상 npm test"와 모순. 11행을 지운다(규칙 파일이 이긴다)
+a처럼 한 글자로 답해 주세요. 다르게 고치고 싶으면 그 문장을 말해 주세요.
 ```
 답을 기록한다. "그대로 둔다"나 다른 문장도 그대로 받아쓴다.
 
@@ -28,10 +28,10 @@ CLAUDE.md에서 찾은 결함 세 개입니다. 우리 팀 CLAUDE.md에도 생�
 단계 2/5 · 정하기
 이런 경우는 어떻게 할까요? 9행을 지우면 "신중하게"라는 의도는 저장소 어디에도 남지 않습니다. 대신 내 스킬의 생각 깊이(`effort`)로 정할 수 있습니다.
 지금: standup-dev effort 없음 / leave-report-dev effort: low
-ⓐ 둘 다 low → 빠르고 싸다. 양식 채우기(회의록·보고·세 줄)에 맞다   (추천: 두 스킬 모두 양식을 채우는 일이다)
-ⓑ <스킬1> low, <스킬2> medium → 근거를 더 찾아야 하는 쪽만 올린다
-ⓒ 둘 다 medium
-한 글자로 답하면서 예측 하나를 덧붙여 주세요: 이 값으로 실행하면 결과 길이가 지금보다 늘지 / 줄지 / 비슷할지. 예: `ⓐ, 비슷`
+a) 둘 다 low → 빠르고 싸다. 양식 채우기(회의록·보고·세 줄)에 맞다   (추천: 두 스킬 모두 양식을 채우는 일이다)
+b) <스킬1> low, <스킬2> medium → 근거를 더 찾아야 하는 쪽만 올린다
+c) 둘 다 medium
+한 글자로 답하면서 예측 하나를 덧붙여 주세요: 이 값으로 실행하면 결과 길이가 지금보다 늘지 / 줄지 / 비슷할지. 예: `a, 비슷`
 ```
 예측 없이 글자만 오면 예측은 `미기록`, 다시 묻지 않는다. 대상 스킬이 하나뿐이면 보기를 그 하나로 줄인다.
 
@@ -46,10 +46,10 @@ CLAUDE.md에서 찾은 결함 세 개입니다. 우리 팀 CLAUDE.md에도 생�
 고친 파일: CLAUDE.md, .claude/skills/standup-dev/SKILL.md, .claude/skills/leave-report-dev/SKILL.md, README.md
 | 전 | 후 |
 |---|---|
-| CLAUDE.md 9행 "…step by step으로 깊고 신중하게 생각하라." | ◆ (삭제) |
-| standup-dev effort: (없음) | ◆ effort: low |
+| CLAUDE.md 9행 "…step by step으로 깊고 신중하게 생각하라." | 바뀜: (삭제) |
+| standup-dev effort: (없음) | 바뀜: effort: low |
 | leave-report-dev effort: low | effort: low (그대로) |
-| README 1~3행 "Claude Code 슈퍼랩 저장소 / 내 반복 작업을… / 판단은…" | ◆ dev팀 Claude Code 저장소 / `bash tools/setup.sh` 뒤 `/standup-dev` / 어제 커밋이 없으면 "(없음)" -- 지어내지 않는다  (제안) |
+| README 1~3행 "Claude Code 슈퍼랩 저장소 / 내 반복 작업을… / 판단은…" | 바뀜: dev팀 Claude Code 저장소 / `bash tools/setup.sh` 뒤 `/standup-dev` / 어제 커밋이 없으면 "(없음)" -- 지어내지 않는다  (제안) |
 검사: standup-dev 통과 6/6, leave-report-dev 통과 7/7
 README 세 줄은 제가 추린 초안입니다. 맞으면 '확정', 고칠 곳이 있으면 그 줄만 고쳐 말해 주세요.
 ```
