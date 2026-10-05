@@ -61,7 +61,7 @@
 
 | 막히는 지점 | 대체 방법 |
 |---|---|
-| 공용 API가 응답하지 않음 | `python3 tools/lab_server.py`를 실행하고 `LAB_API_BASE=http://127.0.0.1:8787`로 Claude Code를 시작합니다. 같은 스킬이 그대로 동작합니다. |
+| 공용 API가 응답하지 않음 | `python3 tools/lab_server.py`를 실행하고 `LAB_API_BASE=http://127.0.0.1:8787 bash tools/setup.sh`로 저장된 주소를 바꾼 뒤 Claude Code를 다시 시작합니다. 같은 스킬이 그대로 동작합니다. 공용 주소로 되돌릴 때는 준비 단계의 `setup.sh` 줄을 다시 실행합니다. |
 | Claude Code가 2.1.283 미만 | 참가자는 lab3의 다른 작업을 진행하고 prompt-audit은 강사 화면으로만 보여 줍니다. |
 | MCP가 연결되지 않음 | `.mcp.json`의 프로젝트 서버 승인을 확인하고, 시연은 패턴 B 결과로 이어 갑니다. |
 | 시간이 부족함 | 참가자의 세 결정과 두 예측을 남기고, 추가 꾸미기는 생략합니다. |
