@@ -13,7 +13,7 @@ ver=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1
 if [[ -z "$ver" ]]; then
   echo "claude 명령을 찾지 못했습니다. Claude Code 설치와 PATH를 확인하세요."
 elif [[ "$(printf '%s\n%s\n' "$need" "$ver" | sort -V | head -1)" != "$need" ]]; then
-  echo "Claude Code $ver — lab3의 /doctor prompt-audit 에는 $need 이상이 필요합니다. 그 단계만 강사 화면으로 봅니다."
+  echo "Claude Code $ver -- $need 이상을 권장합니다. 낮으면 'claude update'로 올리세요."
 else
   echo "Claude Code $ver 확인"
 fi
