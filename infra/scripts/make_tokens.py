@@ -35,7 +35,7 @@ def main():
     a = ap.parse_args()
 
     out = Path(a.out).expanduser()
-    if "claudecode-workshop" in str(out.resolve()) or "ch4-kit" in str(out.resolve()):
+    if "claudecode-workshop" in str(out.resolve()) or "superlab" in str(out.resolve()):
         raise SystemExit("CSV는 저장소 밖에 저장하세요.")
 
     tokens = [make_token() for _ in range(a.count)]

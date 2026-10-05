@@ -23,7 +23,7 @@ Claude Code 워크샵 lab2(연결)에서 70명이 함께 쓰는 가짜 HR·배�
 | 경로 | 역할 |
 |---|---|
 | `template.yaml` | CloudFormation (CloudFront·CF Function·Lambda URL·DynamoDB·S3·OAC) |
-| `lambda/lab_api.py` | API 코어. `ch4-kit/tools/lab_api.py`와 **같은 파일**(로컬 대체 서버가 공유) |
+| `lambda/lab_api.py` | API 코어. `superlab/tools/lab_api.py`와 **같은 파일**(로컬 대체 서버가 공유) |
 | `lambda/handler.py` | Function URL 핸들러, DynamoDB Store |
 | `scripts/make_tokens.py` | 토큰 생성 + DynamoDB 등록. CSV는 저장소 밖 |
 | `site/index.html` | 참가자용 API 문서 페이지 |
@@ -49,7 +49,7 @@ aws s3 cp infra/site/index.html s3://$(aws cloudformation describe-stacks --stac
   --content-type 'text/html; charset=utf-8' --profile $PROFILE --region $REGION
 ```
 
-CloudFront 배포 완료까지 5~10분. `BaseUrl` 출력값을 `ch4-kit/tools/hr_fetch.py`의 `DEFAULT_BASE`와 `ch4-kit/README.md`에 넣는다.
+CloudFront 배포 완료까지 5~10분. `BaseUrl` 출력값을 `superlab/tools/hr_fetch.py`의 `DEFAULT_BASE`와 `superlab/README.md`에 넣는다.
 
 ## 토큰
 
