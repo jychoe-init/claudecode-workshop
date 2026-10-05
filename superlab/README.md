@@ -15,7 +15,7 @@
 
 ```bash
 git clone https://github.com/jychoe-init/claudecode-workshop.git ~/claude-lab
-cd ~/claude-lab/ch4-kit
+cd ~/claude-lab/superlab
 LAB_TOKEN=lab-1ar52p7g LAB_API_BASE=https://dapdz4klovswq.cloudfront.net bash tools/setup.sh
 claude
 ```
