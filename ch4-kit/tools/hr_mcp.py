@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-DEFAULT_BASE = "https://dapdz4klovswq.cloudfront.net"
+DEFAULT_BASE = "https://REPLACE-AFTER-DEPLOY.cloudfront.net"
 
 # 메일·일정은 Microsoft Graph 응답 형식({"value": [...]})을 그대로 넘긴다. 실제 Outlook MCP로 바꿔도 스킬이 같은 필드를 읽는다.
 GRAPH_TOOLS = {"get_sent_mail": "/v1/mail/sent", "get_events": "/v1/calendar"}

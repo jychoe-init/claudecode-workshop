@@ -51,7 +51,7 @@ check("/v1/deploys 4~6건, 필드 5개", s == 200 and 4 <= len(dp["deploys"]) <=
 rem = one["remaining"]
 post = lambda b: lab_api.handle("POST", "/v1/leave/requests", H(T1), json.dumps(b), store, NOW)  # noqa: E731
 check("정상 신청 → 201 pending", post({"employee": emp, "date": "2026-10-30", "days": 1})[0] == 201)
-check("잔여만큼 신청 → 201 (앞 신청이 쌓이지 않음)", post({"employee": emp, "date": "2026-10-31", "days": rem})[0] == 201)
+check("잔여만큼 신청 → 201 (대기 신청은 합산하지 않음)", post({"employee": emp, "date": "2026-10-31", "days": rem})[0] == 201)
 check("잔여 초과 → 409", post({"employee": emp, "date": "2026-10-31", "days": rem + 1})[0] == 409, f"잔여 {rem}")
 check("날짜 형식 → 400", post({"employee": emp, "date": "10/30", "days": 1})[0] == 400)
 check("days 0 → 400", post({"employee": emp, "date": "2026-10-30", "days": 0})[0] == 400)
