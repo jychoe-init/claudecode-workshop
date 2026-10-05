@@ -2,7 +2,7 @@
 # 슈퍼랩 준비 스크립트 — 슈퍼랩 저장소 폴더(superlab) 안에서 한 번 실행한다.
 # 1) Claude Code 버전(2.1.283 이상)·node·python3 확인
 # 2) Git 이력 확인 (클론한 커밋이 /standup·/pr-desc 의 재료)
-# 3) 토큰(LAB_TOKEN)과 공용 API 주소(LAB_API_BASE)를 .claude/settings.local.json 의 env 에 저장 — 커밋되지 않는 파일
+# 3) 토큰(LAB_TOKEN)과 공용 API 주소(LAB_API_BASE)를 .claude/settings.local.json 의 env 에 저장 — 커밋되지 않는 파일. 팀 이름은 lab1 첫 답에서 코치가 받는다
 #    두 값은 환경 변수로 주면 묻지 않고 저장한다:
 #      LAB_TOKEN=lab-xxxxxxxx LAB_API_BASE=https://dapdz4klovswq.cloudfront.net bash tools/setup.sh
 #    로컬 대체 서버로 바꿀 때도 같은 방법: LAB_API_BASE=http://127.0.0.1:8787 bash tools/setup.sh
@@ -94,17 +94,5 @@ else
 fi
 
 npm test 2>/dev/null | tail -1
-
-# ---- 팀 이름 등록 (코치가 내 스킬 이름 <출발점>-<팀> 에 쓴다. settings.local.json 은 커밋 제외) ----
-team=$(read_env LAB_TEAM)
-if [[ -n "$team" ]]; then
-  echo "팀 이름 등록됨: $team (바꾸려면 $LOCAL 의 env.LAB_TEAM 을 수정)"
-else
-  read -r -p "팀 이름 한 단어(영문 소문자, 예: cs, pay, infra) [건너뛰기: Enter → team]: " team
-  team=$(printf '%s' "$team" | tr 'A-Z' 'a-z' | tr -cd 'a-z0-9-')
-  [[ -z "$team" ]] && team="team"
-  save_env LAB_TEAM "$team"
-  echo "팀 이름 저장: $team → 내 스킬은 meeting-notes-$team 처럼 이름이 붙습니다"
-fi
 
 echo "준비 완료. 이제 'claude'를 실행하고 /status 로 설정 소스를 확인한 뒤 /workshop-coach lab1 로 시작하세요."
