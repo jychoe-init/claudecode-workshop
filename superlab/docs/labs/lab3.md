@@ -1,79 +1,64 @@
-# Lab 3 — 내 지시를 점검하고 팀에 넘기기
+# Lab 3 — 내 요청문으로 휴가 신청 스킬을 만들고 팀에 넘기기
 
 ## 목표
 
-내가 Claude에게 쓰는 지시 두 가지 -- 평소 붙여 쓰는 **지시 프롬프트**, 저장소 안의 **지시문**(`CLAUDE.md`·내 스킬) -- 를 점검해 고치고, 저장소를 팀에 넘길 상태로 만듭니다.
+팀의 휴가 조회·신청을 Claude Code로 처리하는 스킬 `leave-request`를 만듭니다. 이번에는 요청문도 **내가 씁니다**. 초안을 쓰고, lab2에서 만든 `/prompt-coach`로 다듬고, 다듬은 요청문을 그대로 붙여 스킬을 만들고, 실제로 세 번 실행해 보고, 만든 스킬의 지시문을 같은 도구로 다시 본 뒤, 토큰 없는 커밋으로 팀에 넘깁니다.
 
 | 구분 | 내용 |
 |---|---|
-| 생성 에셋 | `docs/prompts/<팀>-<용도>.md`(다시 쓴 지시 프롬프트), 고친 `CLAUDE.md`, 내 스킬의 `effort:`, `README.md` 첫 세 줄, 커밋 1개 |
-| 호출 | `/doctor prompt-audit CLAUDE.md .claude/skills/<내 스킬>/SKILL.md` -- 저장소 지시문 점검(3분쯤, 영어 보고서) |
-| 결정 기록 | `docs/worksheets/lab3.md` |
-| 가져올 것 | 평소 Claude(또는 다른 도구)에게 붙여 쓰는 지시 프롬프트 1개(3~10줄). 없으면 코치가 보기 셋을 줍니다. |
+| 생성 에셋 | 다듬은 요청문(`docs/prompts/leave-request.md`에 저장) · `.claude/skills/leave-request/SKILL.md` · README 첫 세 줄 · 커밋 1개 |
+| 호출 | `/leave-request` (현황표) · `/leave-request 신청 <직원> <YYYY-MM-DD> <일수>` |
+| 연결 | HR 시스템은 준비 명령으로 이미 연결되어 있다 -- `/mcp`에 `hr`. 인증·API 코드는 쓰지 않는다 |
+| 완료 기준 | 현황표가 나오고, 신청 1건이 접수 ID로 보이고, 세 가지 실수 경우에 신청이 생기지 않았다 |
 
-시작 명령은 하나입니다.
+## 요구 사항 (이것을 읽고 초안을 쓴다)
 
-```text
-/workshop-coach lab3
-```
+> 팀에서 Claude Code로 휴가 신청을 처리하려 합니다. HR 시스템은 연결되어 있습니다(`/mcp`에서 `hr`의 도구 이름을 볼 수 있습니다: 팀 전원 조회, 신청 내역 조회, 직원 한 명 조회, 연차 신청).
+> 팀장이 `/leave-request` 한 번에 팀 연차 현황표를 보고, `신청 <직원> <날짜> <일수>`를 주면 신청까지 됩니다.
+> 날짜가 빠진 신청, 잔여보다 많은 신청, 전송 직전에 마음을 바꾼 취소 -- 세 경우를 처리합니다.
+> 토큰은 어디에도 남기지 않습니다.
 
 ## 파일 구조
 
 ```text
 superlab/
-├── CLAUDE.md                         저장소 지시문 — 연습용 결함 세 줄이 심어져 있다 (낡은 문장, 없는 명령, 규칙 파일과 모순)
-├── .claude/rules/testing.md          파일별 규칙 — CLAUDE.md의 한 줄과 서로 모순
-├── .claude/skills/<내 스킬>/SKILL.md   lab1·lab2에서 만든 내 스킬 — effort 값이 여기 머리 부분에 들어간다
-├── docs/prompts/
-│   ├── examples/{meeting,review,translate}.md   프롬프트를 안 가져온 사람용 보기 a/b/c
-│   └── <팀>-<용도>.md                ★ 코치가 저장하는 다시 쓴 내 지시 프롬프트 (예: cs-meeting-summary.md)
-├── usage.csv                         실행마다 한 줄이 쌓이는 기록(effort, 결과 길이) — 커밋되지 않음
-├── README.md                         ★ 첫 세 줄이 "누구를 위한 저장소 / 첫 명령 / 하지 말 것"으로 바뀐다
-└── docs/worksheets/lab3.md           ★ 결정 기록
+├── .mcp.json, tools/hr_mcp.py          HR 시스템 연결 (준비 명령이 저장한 토큰을 환경 변수에서 읽는다)
+├── .claude/settings.json               조회 도구는 승인 없이, 신청 도구는 승인 창 -- 바꾸지 않는다
+├── .claude/skills/prompt-coach/        lab2에서 만든 내 도구
+├── .claude/skills/leave-request/       ★ 이 랩에서 만드는 스킬
+├── docs/prompts/leave-request.md       ★ 다듬은 요청문 (초안 → 질문과 답 → 최종)
+└── README.md                           ★ 첫 세 줄 -- 누구를 위한 저장소 / 첫 명령 / 하지 말 것
 ```
 
-## 5단계
+## 진행
 
-참가자가 치는 것은 **답 ≤7번과 명령 두 줄**(점검 명령, 실행 명령)입니다. 점검 명령은 3분쯤 걸리고 결과가 영어로 길게 나오는데, 읽지 않아도 됩니다 -- 코치가 세 개로 정리합니다.
+참가자가 치는 것은 **초안 1개, 질문 답 ≤3, 붙이기 1번, 실행 3번(승인 2번), 다시 보기 1번, 커밋 지시 1번**입니다.
 
-| 단계 | 코치가 하는 것 | 내가 답하는 것 |
+| 단계 | 내가 하는 것 | 확인 |
 |---|---|---|
-| 1/5 출발점 | "평소 쓰는 지시 프롬프트를 붙여 주세요"(없으면 a/b/c) | 프롬프트 붙이기 |
-| 2/5 정하기 ① | 그 프롬프트에서 Claude가 알 수 없는 것 ≤3개를 원문 인용으로 짚고 **다시 쓴 초안**을 보여 준다. 같은 메시지 끝에 저장소 지시문 점검 명령 한 줄 | 고칠 곳이 없으면 그 줄을 그대로 친다: `/doctor prompt-audit CLAUDE.md .claude/skills/<내 스킬>/SKILL.md` |
-| 2/5 정하기 ② | 점검 결과가 나오면 "정리해 줘" → 고칠 만한 지적 세 개를 a/b/c로(원문 + 왜 + 고치면 이렇게) | "정리해 줘", 그다음 한 글자 |
-| 3/5 만들기 | 고른 지적을 고치고, 다시 쓴 프롬프트를 `docs/prompts/`에 저장하고, 내 스킬 `effort`를 추천값으로 넣고, README 세 줄 초안을 만들어 전/후 표로 보여 준다 | `확정, <예측>`(이 effort로 다시 돌리면 결과 길이가 늘지/줄지/비슷할지) |
-| 4/5 실행 | 내 스킬 실행 명령 한 줄 | 그 줄을 그대로 친다 |
-| 5/5 확인 | 커밋을 만들고 검사 표(지적 줄 바뀜 · 프롬프트 파일 · effort · 예측 → 실제 · 커밋에 토큰 파일 없음) | "확인해 줘" |
+| 1 초안 | 위 요구 사항을 읽고 요청문 초안을 3~6줄로 쓴다. 잘 쓰려 하지 않는다 -- 다음 단계가 고친다 | -- |
+| 2 다듬기 | `/prompt-coach "<초안>"` → 질문에 답한다(한 번에 하나, 선택지 또는 직접) → 고친 요청문을 받는다. 초안·질문과 답·최종을 `docs/prompts/leave-request.md`에 붙여 두라고 한다 | 질문에 "읽는 사람", "일어나면 안 되는 일", "출력 형식" 중 둘 이상이 나오면 정상 |
+| 3 만들기 | 고친 요청문을 **그대로** 붙인다 | `.claude/skills/leave-request/SKILL.md` 생성(쓰기 승인 1회) |
+| 4 실행 3회 | ① `/leave-request` ② `/leave-request 신청 <팀원> <날짜> 1` → 승인 창 → **허용** ③ 같은 명령을 다른 날짜로 → 승인 창 → **거절** | ① 표의 인원이 `/mcp`의 팀 전원 조회와 같다 ② 접수 ID가 나오고 `신청 내역 조회해 줘`에 그 ID가 보인다 ③ 거절한 건은 내역에 없다 |
+| 5 다시 보기 | `/prompt-coach .claude/skills/leave-request/SKILL.md` -- 모델이 쓴 스킬 지시문을 내 도구의 같은 기준으로 본다 | "그대로 써도 됨"이면 끝. 지적이 있으면 고칠지 내가 정한다("적용해") |
+| 6 넘기기 | "README 첫 세 줄을 '누구를 위한 저장소 / 첫 명령 / 하지 말 것'으로 바꾸고, 토큰 파일은 빼고 커밋해"라고 한다 | `git show --stat`에 `.claude/settings.local.json`·`usage.csv`·`reports/`가 없다 |
 
-점검 결과 모양(영어)은 이렇습니다 -- 코치가 이 중 `Confidence`가 High·Medium인 줄만 골라 우리말로 정리합니다.
+세 가지 실수 경우(날짜 누락·잔여 초과·취소)는 4단계 ②③과 함께 한 번씩 해 봅니다 -- 날짜를 빼고, 일수를 99로. 어느 경우도 신청이 생기면 안 됩니다. 어디서 막혔는지(스킬이 먼저 / 시스템이 거절 / 내가 승인 창에서)는 정답이 없습니다 -- 생기지 않았으면 됩니다.
 
-```text
-| # | Location      | Evidence                                   | Pattern | Why it's outdated                 | Confidence | Action  |
-| 1 | CLAUDE.md:9   | "…step by step으로 깊고 신중하게 생각하라." | 1b      | thinking depth is set by effort … | High       | remove  |
-| 2 | CLAUDE.md:10  | "커밋 전 반드시 `make lint`를 실행한다."    | 2       | there is no Makefile …            | High       | rewrite |
-| 3 | CLAUDE.md:11 vs .claude/rules/testing.md:7 | …           | 2       | two files rule on the same point  | Medium     | remove  |
-```
+## 알아 두면 좋은 것
 
-## 코치 없이 직접 할 때
+- 신청에는 **늘 승인 창이 뜹니다.** 저장소 설정이 신청 도구를 "승인"으로 두었고, 승인 규칙은 deny → ask → allow 순서라 스킬 머리 부분에 무엇을 적어도 승인 창이 남습니다. 요청문에 "보내기 전에 확인"을 적었다면 승인 창 앞에 스킬의 확인 한 줄이 한 번 더 나옵니다 -- 두 층입니다.
+- 신청 내역에는 같은 실습 토큰을 쓰는 다른 참가자의 신청도 함께 보입니다. 내 것은 접수 ID로 찾습니다.
+- 토큰은 `.claude/settings.local.json`에만 있고 커밋되지 않습니다. 스킬·요청문·README에 토큰을 적을 일은 없습니다.
+- 공용 HR 시스템이 응답하지 않으면: `python3 tools/lab_server.py` → `LAB_API_BASE=http://127.0.0.1:8787 bash tools/setup.sh` → Claude Code 다시 시작. 스킬은 그대로 동작합니다.
 
-회사에서는 명령 세 줄입니다. 분기마다 한 번씩 치면 됩니다.
+## 막힐 때
 
-```text
-/prompt-coach "<평소 쓰는 지시 프롬프트 초안>"
-```
-빈 칸(목적·입력·출력 모양·하지 말 것)을 짚고 다시 써 줍니다. 반복해서 붙이는 문장은 설정이나 스킬로 옮기라고 알려 줍니다.
-
-```text
-/doctor prompt-audit CLAUDE.md .claude/skills/<내 스킬>/SKILL.md
-```
-낡은 문장·없는 명령·서로 모순을 찍어 줍니다(파일을 적으면 그 파일만, 적지 않으면 저장소 전체라 오래 걸립니다). 결과가 나오면 받아들일 것만 골라 이렇게 이어서 말합니다.
-
-```text
-지적 <번호>와 <번호>를 적용해 줘. 다시 쓴 지시 프롬프트는 docs/prompts/<팀>-<용도>.md 에 저장하고, 내 스킬 <스킬 이름>의 effort 는 <low 또는 medium>으로 해.
-README 첫 세 줄을 "누구를 위한 저장소 / 첫 명령 / 하지 말 것"으로 다시 쓰고, 커밋 전에 git status 로 토큰 파일(settings.local.json)이 없는 것을 보여 준 뒤 커밋해 줘.
-```
+- 초안이 안 나온다: 요구 사항의 세 문장을 그대로 붙이고 "이걸로 스킬 만들어 줘"라고 쓰면 초안이다. 그다음은 `/prompt-coach`가 묻는다.
+- 완성형을 보고 싶다: `docs/solutions/lab3/leave-request.prompt.md`(다듬어진 요청문과 초안과의 차이), `docs/solutions/lab3/leave-request/SKILL.md`. 정답과 다르다고 틀린 것이 아니다 -- 완료 기준이 되면 된다.
+- 승인 창이 신청에서 안 떴다: 저장소 설정이 바뀐 것이다. `git diff .claude/settings.json`을 보고 강사에게 알린다.
 
 ## 완료 기준
 
-- [ ] `lab3a` 내 지시 프롬프트를 진단해 다시 썼고(`docs/prompts/`), 저장소 지시문의 지적 하나를 고쳤다.
-- [ ] `lab3b` effort를 정해 `usage.csv`로 결과 길이 차이를 봤고, README 세 줄이 든 커밋이 있고 토큰·로컬 설정은 커밋에 없다.
+- [ ] `lab3a` `/leave-request` 현황표가 나왔고, 신청 1건의 접수 ID가 신청 내역에 보이며, 날짜 누락·잔여 초과·승인 거절 세 경우 모두 신청이 생기지 않았다.
+- [ ] `lab3b` `docs/prompts/leave-request.md`에 초안과 최종 요청문이 있고, 토큰 파일이 빠진 커밋 1개가 있다.
