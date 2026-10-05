@@ -54,11 +54,12 @@
 /<보고이름>
 ```
 
-공용 API를 쓸 수 없을 때만 아래처럼 로컬 대체 서버를 사용합니다.
+공용 API를 쓸 수 없을 때만 아래처럼 로컬 대체 서버를 사용합니다. 저장된 주소를 로컬 주소로 바꾸고 Claude Code를 다시 시작하면 스킬은 그대로 동작합니다. 공용 API로 되돌릴 때는 준비 단계의 `setup.sh` 줄을 다시 실행합니다.
 
 ```bash
 python3 tools/lab_server.py
-LAB_API_BASE=http://127.0.0.1:8787 claude
+LAB_API_BASE=http://127.0.0.1:8787 bash tools/setup.sh
+claude
 ```
 
 ## 완료 기준

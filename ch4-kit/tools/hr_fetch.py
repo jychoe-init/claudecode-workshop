@@ -13,7 +13,7 @@ import sys
 import urllib.error
 import urllib.request
 
-DEFAULT_BASE = "https://REPLACE-AFTER-DEPLOY.cloudfront.net"  # Stage 2 배포 후 실제 주소로 바뀐다
+DEFAULT_BASE = "https://dapdz4klovswq.cloudfront.net"
 PATHS = {"me": "/v1/me", "leave": "/v1/leave", "requests": "/v1/leave/requests", "deploys": "/v1/deploys"}
 
 
@@ -38,7 +38,7 @@ def main(argv):
         print(e.read().decode("utf-8", "replace") or json.dumps({"error": f"http_{e.code}"}))
         return 0
     except (urllib.error.URLError, TimeoutError) as e:
-        print(json.dumps({"error": "unreachable", "message": f"{base} 에 연결하지 못했습니다. LAB_API_BASE=http://127.0.0.1:8787 로 바꾸고 python3 tools/lab_server.py 를 켜세요.", "detail": str(e)}, ensure_ascii=False))
+        print(json.dumps({"error": "unreachable", "message": f"{base} 에 연결하지 못했습니다. python3 tools/lab_server.py 를 켜고 LAB_API_BASE=http://127.0.0.1:8787 bash tools/setup.sh 로 주소를 바꾼 뒤 Claude Code 를 다시 시작하세요.", "detail": str(e)}, ensure_ascii=False))
         return 0
 
 

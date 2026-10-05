@@ -12,7 +12,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-DEFAULT_BASE = "https://REPLACE-AFTER-DEPLOY.cloudfront.net"
+DEFAULT_BASE = "https://dapdz4klovswq.cloudfront.net"
 
 TOOLS = [
     {

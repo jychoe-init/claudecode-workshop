@@ -51,7 +51,7 @@
     "network": {
       "allowLocalBinding": true,
       "allowedDomains": [
-        "REPLACE-AFTER-DEPLOY.cloudfront.net"
+        "dapdz4klovswq.cloudfront.net"
       ]
     }
   },
