@@ -8,9 +8,9 @@
 - [ ] `claude --version`이 2.1.283 이상인지 확인합니다.
 - [ ] Node.js와 Python 3가 실행되는지 확인합니다.
 - [ ] Bedrock 환경에서 `/doctor prompt-audit`을 리허설합니다.
-- [ ] 권한 규칙은 **ask가 allow를 이깁니다.** `settings.json`의 ask에 `Edit(**)`를 넣으면 코치의 워크시트 받아쓰기(`Edit(docs/worksheets/**)` allow)가 막힙니다. 킷은 ask를 `Edit(reports/**)`로 좁혀 두었으니 팀 울타리를 바꿀 때 이 점을 유지합니다.
+- [ ] 권한 규칙은 **ask가 allow를 이깁니다.** `settings.json`의 ask에 `Edit(**)`를 넣으면 코치의 워크시트 받아쓰기(`Edit(docs/worksheets/**)` allow)가 막힙니다. 기본 설정은 ask를 `Edit(reports/**)`로 좁혀 두었으니 팀 울타리를 바꿀 때 이 점을 유지합니다.
 - [ ] **참가자 조건 재현**: 강사 머신에 샌드박스(auto-allow)나 `defaultMode: auto`가 켜져 있으면 승인 없는 `!` 주입도 실행되어 lab2 예측 A 결과가 참가자와 달라집니다. 시연 세션은 `claude --settings '{"sandbox":{"enabled":false},"permissions":{"defaultMode":"default"}}'`로 엽니다. 참가자 기본 조건에서는 승인 없는 주입이 "Shell command permission check failed"로 **중단**됩니다(승인 창 없음).
-- [ ] 샌드박스를 켠 채 로컬 대체 서버(127.0.0.1:8787)를 쓰려면 킷 `settings.json`의 `sandbox.network.allowLocalBinding`이 필요합니다(이미 들어 있음).
+- [ ] 샌드박스를 켠 채 로컬 대체 서버(127.0.0.1:8787)를 쓰려면 `settings.json`의 `sandbox.network.allowLocalBinding`이 필요합니다(이미 들어 있음).
 - [ ] Edit 승인을 거절당하면 Claude가 셸(`echo >`)로 파일을 쓰기도 합니다(리허설에서 관측). lab2 예측 B가 어긋난 참가자에게 이 점을 짚어 주면 "ask는 도구를 거른다"가 바로 보입니다.
 - [ ] Opus 5.5 결함 ①은 "신중하게 생각하라" 수준으로 둡니다. 추론 내용을 먼저 설명하라는 지시는 요청 거절을 일으킬 수 있으므로 쓰지 않습니다.
 - [ ] `samples/meeting-2026-10-02.txt`와 세 랩 안내문을 강사 화면에서 바로 열 수 있게 준비합니다.
@@ -39,7 +39,8 @@
 
 ### lab1
 
-- 출발점 ⓐ~ⓔ 중 하나를 참가자가 고르게 합니다. 참가자는 킷 스킬을 처음 보므로, 결정 전에 `/meeting-notes samples/meeting-2026-10-02.txt` 같은 명령을 하나 실행해 결과를 보게 합니다.
+- 결정 1(양식)에서 코치는 섹션 목록을 묻지 않고 참가자가 방금 본 결과물의 뼈대를 보여 주며 "가장 먼저 바꿀 곳 하나"를 묻습니다. 순회할 때 참가자가 빈칸 앞에서 멈춰 있으면 "결과물에서 마음에 안 드는 줄 하나만 코치에게 말하세요"라고 안내합니다. 바꿀 곳이 많은 참가자에게는 `templates/` 안의 미리 만든 양식(주간보고 3종, 회의록 3종, 스탠드업·PR 2종씩)으로 통째 교체하는 보기 ⓑ를 권합니다.
+- 출발점 ⓐ~ⓔ 중 하나를 참가자가 고르게 합니다. 참가자는 예시 스킬을 처음 보므로, 결정 전에 `/meeting-notes samples/meeting-2026-10-02.txt` 같은 명령을 하나 실행해 결과를 보게 합니다.
 - 코치는 세 결정을 기록하지만 스킬 파일은 고치지 않습니다.
 - 실행 전에 섹션 수와 입력 속 명령형 문장의 처리를 예측하게 합니다.
 

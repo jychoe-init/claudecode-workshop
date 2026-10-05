@@ -13,13 +13,13 @@
 | 권한 | 도구 단위 allow/ask | 조회 전용 스크립트 1건을 **사전 승인**(설정 allow 또는 스킬 `allowed-tools`). 주입 명령은 승인 창을 띄우지 않고, 승인이 없으면 스킬이 중단된다 |
 | 울타리와 만남 | 변경 = 승인 창 | `Bash(curl *)` deny → 스크립트로, 조회 전용임을 코드로 보장 |
 
-모든 결정은 SKILL.md "질문의 모양"대로 묻는다: **지금 상태(킷 `leave-report`·`hr_fetch.py`에서 읽어 인용) → 파일에 들어갈 보기 2~3개, 하나에 (추천) → 질문 하나.** 결정 하나에 정할 것이 둘이면 1a/1b로 나눠 한 메시지에 하나씩.
+모든 결정은 SKILL.md "질문의 모양"대로 묻는다: **지금 상태(예시 `leave-report`·`hr_fetch.py`에서 읽어 인용) → 파일에 들어갈 보기 2~3개, 하나에 (추천) → 질문 하나.** 결정 하나에 정할 것이 둘이면 1a/1b로 나눠 한 메시지에 하나씩.
 
 ## 결정 1/3 · 사내 시스템과 조회 동작
 정해지는 것: `tools/<시스템>_fetch.py`가 부르는 경로, 스킬 `description`.
 
 ### 1a 어느 조회를 가져올까
-지금(킷 `leave-report/SKILL.md` 첫 줄에서 인용): `` !`python3 tools/hr_fetch.py leave` `` — 실습 API에서 팀 연차 현황을 가져온다.
+지금(예시 `leave-report/SKILL.md` 첫 줄에서 인용): `` !`python3 tools/hr_fetch.py leave` `` — 실습 API에서 팀 연차 현황을 가져온다.
 
 | 보기 | 내용(실습 API가 주는 것) | 결과 |
 |---|---|---|
@@ -91,7 +91,7 @@
 ## 직접 작성 (코치는 안내만)
 참가자가 쓰는 것:
 - 워크시트에 API 표면 3줄(경로 · 인자 · 반환 예시) — 결정 1에서 받아씀.
-- 스킬 `.claude/skills/<보고이름>/SKILL.md`: 킷 `leave-report`를 복사해 **주입 줄·출력 형식·금지**를 바꿈(`<!-- 바꿀 곳 -->`). 파일 저장을 택했으면 "결과를 `reports/<날짜>.md`로 저장한다" 한 줄 추가.
+- 스킬 `.claude/skills/<보고이름>/SKILL.md`: 예시 `leave-report`를 복사해 **주입 줄·출력 형식·금지**를 바꿈(`<!-- 바꿀 곳 -->`). 파일 저장을 택했으면 "결과를 `reports/<날짜>.md`로 저장한다" 한 줄 추가.
 - 결정 3의 승인 1줄: `.claude/settings.json` `permissions.allow` **또는** 스킬 frontmatter `allowed-tools:` 중 결정한 곳에.
 - `CLAUDE.md` 끝에 외부 텍스트 원칙 한 줄.
 
