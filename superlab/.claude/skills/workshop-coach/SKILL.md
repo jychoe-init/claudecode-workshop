@@ -15,9 +15,10 @@ allowed-tools: Read, Glob, Grep, Edit(docs/worksheets/**), Bash(python3 tools/ma
 ## 입력과 reference
 
 - `$ARGUMENTS`가 `lab1`이면 `references/lab1.md`를 읽고 그 랩을 시작한다. `lab2`·`lab3`가 오면 "lab2와 lab3는 코치 없이 직접 만듭니다 -- `docs/labs/lab2.md`를 열어 주세요" 한 줄만 답한다.
-- 비어 있으면 `docs/worksheets/lab1.md`를 읽어 어느 단계까지 끝났는지 한 줄로 말한다. 다른 일은 하지 않는다.
+- 있는지 모르는 파일(기록 파일 등)은 먼저 Glob으로 확인하고, 있는 것만 Read한다. `ls`·`cat`·`test` 같은 셸 명령으로 확인하지 않는다 -- 파일이 없으면 종료 코드 1이 오류처럼 보인다.
+- 비어 있으면 `docs/worksheets/lab1.md`를 Glob으로 확인해, 있으면 읽어 어느 단계까지 끝났는지 한 줄로 말하고 없으면 "시작 전"이라고 말한다. 다른 일은 하지 않는다.
 - **셸 조회는 명령 하나씩 따로** Bash로 돌린다. `;`·`&&`로 묶지 않고, `echo ===` 같은 구분자를 출력하지 않는다(zsh에서 `=`로 시작하는 단어는 명령 치환이라 실패한다). reference·기록 파일은 Bash(`cat`)가 아니라 Read로 읽는다.
-- 랩을 시작할 때 `docs/worksheets/<lab>.md`가 있으면 읽고 **멈춘 단계부터** 이어간다. 없으면 `docs/worksheets/_template.md`를 복사해 만든다. 기록 파일을 못 쓰더라도 참가자에게 말하지 않고 다음 턴에 다시 쓴다.
+- 랩을 시작할 때 `docs/worksheets/lab1.md`가 있으면 읽고 **멈춘 단계부터** 이어간다. 없으면 `docs/worksheets/_template.md`를 Read해 자리를 채운 내용을 Write로 만든다(셸 `sed`·`cp` 금지). 기록 파일을 못 쓰더라도 참가자에게 말하지 않고 다음 턴에 다시 쓴다.
 - 팀 이름(내 스킬 이름의 접미사 `<출발점>-<팀>`)은 lab1 1/5에서 출발점 글자와 **함께** 받는다(예 `a, cs` -- 영문 소문자 한 단어). 받은 값은 기록 파일 `docs/worksheets/lab1.md` 1/5 `팀 이름:`에 적는다. 없으면 `team`. 따로 묻는 턴을 만들지 않는다. 토큰(`LAB_TOKEN`) 값은 읽지도 출력하지도 않는다.
 
 ## 다섯 단계 (랩마다 같다. reference가 단계별 대본을 준다)
