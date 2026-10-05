@@ -6,7 +6,7 @@
 
 | 구분 | 내용 |
 |---|---|
-| 생성 에셋 | 다듬은 요청문(`docs/prompts/leave-request.md`에 저장) · `.claude/skills/leave-request/SKILL.md`(팀원이 바로 쓸 수 있게 정리) · README 첫 세 줄 · 커밋 1개 |
+| 생성 에셋 | 다듬은 요청문(`docs/prompts/leave-request.md`에 저장) · `.claude/skills/leave-request/SKILL.md`(팀원이 바로 쓸 수 있게 정리) · README 맨 위 세 줄 · 커밋 1개 |
 | 호출 | `/leave-request …` -- 인자 모양은 내가 정한다(예: 조회는 인자 없이, 신청은 `신청 <직원> <날짜> <일수>`) |
 | 연결 | HR 시스템은 준비 명령으로 이미 연결되어 있다 -- `/mcp`에 `hr`. 인증·API 코드는 쓰지 않는다 |
 | 완료 기준 | 조회가 되고, 신청 1건이 접수 ID로 보이고, 내가 "일어나면 안 되는 일"로 정한 것 하나를 실제로 시도해 신청이 생기지 않았다 |
@@ -20,7 +20,7 @@ superlab/
 ├── .claude/skills/prompt-coach/        lab2에서 만든 내 도구
 ├── .claude/skills/leave-request/       ★ 이 랩에서 만드는 스킬
 ├── docs/prompts/leave-request.md       ★ 다듬은 요청문 (초안 → 질문과 답 → 최종)
-└── README.md                           ★ 첫 세 줄 -- 누구를 위한 저장소 / 첫 명령 / 하지 말 것
+└── README.md                           ★ 맨 위 세 줄 -- 무엇을 하는 저장소인지 · 처음 칠 명령 · 하면 안 되는 것
 ```
 
 ## 진행
@@ -43,7 +43,7 @@ superlab/
 스킬을 팀과 공유하는 공식 방법은 셋입니다 -- 저장소의 `.claude/skills/`를 커밋한다(그 저장소에서 세션을 여는 모두가 받는다) / 플러그인으로 묶는다 / 조직 관리 설정으로 배포한다. 이 랩은 첫 번째입니다: 커밋 하나가 넘기는 단위이고, 아래 한 줄을 Claude에게 시키면 끝입니다.
 
 ```
-leave-request를 팀에 넘길 거야. SKILL.md에 내 이름·컴퓨터 경로·토큰이 없는지 보고, README 맨 위에 누구를 위한 저장소인지 · 처음 칠 명령 · 하지 말 것을 한 줄씩 적은 뒤 커밋해.
+leave-request를 팀에 넘길 거야. SKILL.md에 내 이름·컴퓨터 경로·토큰이 없는지 봐 줘. 그리고 README 맨 위에 세 줄을 적어 줘 -- 이 저장소가 무엇을 하는 곳인지, 받은 사람이 처음 칠 명령, 하면 안 되는 것. 다 되면 커밋해.
 ```
 
 토큰 파일(`.claude/settings.local.json`)과 `usage.csv`는 `.gitignore`가 막습니다 -- `git show --stat`에 없는지 한 번 봅니다.
