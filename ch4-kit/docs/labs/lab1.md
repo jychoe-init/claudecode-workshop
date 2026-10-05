@@ -11,17 +11,24 @@
 /workshop-coach lab1
 ```
 
-## 길 선택
+## 출발점 다섯 가지
 
-| 길 | 출발점 | 잘 맞는 경우 | 남는 파일 |
+코치가 가장 먼저 "어느 출발점에서 시작할까요"를 묻습니다. 보기는 이 다섯 가지입니다. 킷에 들어 있는 스킬은 처음 보는 것이니, 결정 전에 하나를 실행해 보세요.
+
+| 보기 | 넣는 것 → 나오는 것 | 맞는 사람 | 지금 실행해 보기 |
 |---|---|---|---|
-| A · 변형 | `meeting-notes`, `weekly-report`, `standup`, `pr-desc` | 기존 예시를 우리 팀 양식으로 바꾸고 싶을 때 | `.claude/skills/<내이름>/SKILL.md`, `template.md` |
-| B · 신규 | `docs/templates/skill-blank/` | 다른 반복 작업과 입력이 이미 분명할 때 | `.claude/skills/<내이름>/SKILL.md`, 필요하면 `template.md` |
+| ⓐ 회의록 `meeting-notes` | 회의 녹취 txt → 결정사항·액션 아이템(담당·기한)·미결 | 회의가 많은 사람. 샘플 녹취가 있어 바로 볼 수 있습니다 | `/meeting-notes samples/meeting-2026-10-02.txt` |
+| ⓑ 주간보고 `weekly-report` | 한 주 메모 md → 성과·다음 주 계획·이슈 | 매주 보고서를 쓰는 사람 | `/weekly-report samples/weekly-memo.md` |
+| ⓒ 스탠드업 `standup` | 어제 커밋(자동으로 읽음) + 오늘 할 일 → 어제·오늘·막힘 | 개발자 | `/standup "오늘 할 일"` |
+| ⓓ PR 설명 `pr-desc` | 현재 브랜치 diff(자동으로 읽음) → PR 제목·본문 초안 | 개발자 | `/pr-desc` |
+| ⓔ 새로 만들기 `docs/templates/skill-blank/` | 빈 틀. 입력·출력·금지 자리만 있습니다 | 반복 작업이 분명한데 위 넷에 없는 사람 | (실행할 것 없음) |
+
+ⓐ~ⓓ는 이미 동작하는 스킬을 복사해 `template.md`(출력 양식)와 지시문 두세 줄만 내 것으로 고칩니다. 대부분은 여기서 시작합니다. ⓔ는 frontmatter부터 직접 채웁니다. 어느 쪽이든 남는 파일은 `.claude/skills/<내이름>/SKILL.md`(+ `template.md`)입니다.
 
 ## 1. 세 가지 결정
 
 **참가자가 하는 일**
-- 길 A 또는 B를 고릅니다.
+- 출발점 하나를 고릅니다(위 표의 ⓐ~ⓔ).
 - 독자와 출력 양식을 정합니다.
 - 입력 소스와 호출 방식을 정합니다.
 - 만들면 안 되는 내용 하나를 정합니다.
