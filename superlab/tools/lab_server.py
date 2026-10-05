@@ -31,7 +31,7 @@ class Handler(BaseHTTPRequestHandler):
         return self.rfile.read(n).decode("utf-8", "replace") if n else ""
 
     def _dispatch(self, method: str, body):
-        status, payload = lab_api.handle(method, self.path.split("?")[0], dict(self.headers), body, STORE)
+        status, payload = lab_api.handle(method, self.path, dict(self.headers), body, STORE)
         self._send(status, json.dumps(payload, ensure_ascii=False).encode())
 
     def do_GET(self):
