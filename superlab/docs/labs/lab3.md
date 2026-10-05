@@ -6,7 +6,7 @@
 
 | 구분 | 내용 |
 |---|---|
-| 생성 에셋 | 다듬은 요청문(`docs/prompts/leave-request.md`에 저장) · `.claude/skills/leave-request/SKILL.md` · README 첫 세 줄 · 커밋 1개 |
+| 생성 에셋 | 다듬은 요청문(`docs/prompts/leave-request.md`에 저장) · `.claude/skills/leave-request/SKILL.md`(팀원이 바로 쓸 수 있게 정리) · README 첫 세 줄 · 커밋 1개 |
 | 호출 | `/leave-request` (현황표) · `/leave-request 신청 <직원> <YYYY-MM-DD> <일수>` |
 | 연결 | HR 시스템은 준비 명령으로 이미 연결되어 있다 -- `/mcp`에 `hr`. 인증·API 코드는 쓰지 않는다 |
 | 완료 기준 | 현황표가 나오고, 신청 1건이 접수 ID로 보이고, 세 가지 실수 경우에 신청이 생기지 않았다 |
@@ -44,9 +44,22 @@ superlab/
 | 4 만들기 | 최종 요청문을 **그대로** 붙인다 | `.claude/skills/leave-request/SKILL.md` 생성(쓰기 승인 1회) |
 | 5 실행 3회 | ① `/leave-request` ② `/leave-request 신청 <팀원> <날짜> 1` -> 승인 창 -> **허용** ③ 같은 명령을 다른 날짜로 -> 승인 창 -> **거절** | ① 표의 인원이 1단계 팀 조회와 같다 ② 접수 ID가 나오고 `신청 내역 조회해 줘`에 그 ID가 보인다 ③ 거절한 건은 내역에 없다 |
 | 6 다시 보기 | `/prompt-coach .claude/skills/leave-request/SKILL.md` -- 모델이 쓴 스킬 지시문을 내 도구의 같은 기준으로 본다 | "그대로 써도 됨"이면 끝. 지적이 있으면 고칠지 내가 정한다("적용해") |
-| 7 넘기기 | "README 첫 세 줄을 '누구를 위한 저장소 / 첫 명령 / 하지 말 것'으로 바꾸고, 토큰 파일은 빼고 커밋해"라고 한다 | `git show --stat`에 `.claude/settings.local.json`·`usage.csv`·`reports/`가 없다 |
+| 7 팀에 넘길 준비 | 아래 "팀에 넘길 준비" 점검 ②~④를 한 줄씩 Claude에게 시킨다. 마지막에 "README 첫 세 줄을 '누구를 위한 저장소 / 첫 명령 / 하지 말 것'으로 바꾸고, 토큰 파일은 빼고 커밋해" | `check_skill.py` 통과, `git show --stat`에 `.claude/settings.local.json`·`usage.csv`·`reports/`가 없다 |
 
 세 가지 실수 경우(날짜 누락·잔여 초과·취소)는 5단계 ②③과 함께 한 번씩 해 봅니다 -- 날짜를 빼고, 일수를 99로. 어느 경우도 신청이 생기면 안 됩니다. 어디서 막혔는지(스킬이 먼저 / 시스템이 거절 / 내가 승인 창에서)는 정답이 없습니다 -- 생기지 않았으면 됩니다.
+
+## 팀에 넘길 준비 (7단계)
+
+팀원이 클론해서 설정 없이 첫 명령이 돌아야 넘긴 것입니다. 네 가지를 봅니다 -- 전부 Claude에게 한 줄씩 시키면 됩니다.
+
+| 점검 | 어떻게 | 왜 |
+|---|---|---|
+| ① 다른 사람 눈으로 | 6단계 `/prompt-coach .claude/skills/leave-request/SKILL.md`의 지적을 반영했다 | 내 머릿속 전제가 지시문에 빠져 있지 않은지 |
+| ② 내 것이 박혔나 | "SKILL.md에 내 이름(kim 같은 직원 이름)·내 컴퓨터 경로·토큰이 들어 있는지 찾아 줘" -- 있으면 인자나 설정으로 뺀다 | 팀원이 쓰면 내 이름으로 신청되는 사고를 막는다 |
+| ③ 골라 쓸 수 있나 | "`description`을 무엇을·언제 쓰는지 한 문장으로, `argument-hint`에 부르는 법을 적어 줘" → `/skills` 목록에 그 문장이 보인다. `python3 tools/check_skill.py .claude/skills/leave-request` 통과 | 팀원은 목록의 한 줄만 보고 고른다 |
+| ④ 받는 사람의 첫 10분 | README 첫 세 줄 -- 누구를 위한 저장소 / 첫 명령(`bash tools/setup.sh`) / 하지 말 것. 토큰·로컬 파일(`.claude/settings.local.json`, `usage.csv`)이 커밋에 없다 | 클론 뒤 설정 없이 첫 명령이 돌아야 한다 |
+
+플러그인 패키징이나 조직 전체 배포는 이 랩의 범위가 아닙니다 -- 팀 저장소 커밋 하나가 넘기는 단위입니다.
 
 ## 초안 예 (2단계)
 
@@ -74,4 +87,4 @@ superlab/
 ## 완료 기준
 
 - [ ] `lab3a` `/leave-request` 현황표가 나왔고, 신청 1건의 접수 ID가 신청 내역에 보이며, 날짜 누락·잔여 초과·승인 거절 세 경우 모두 신청이 생기지 않았다.
-- [ ] `lab3b` `docs/prompts/leave-request.md`에 초안과 최종 요청문이 있고, 토큰 파일이 빠진 커밋 1개가 있다.
+- [ ] `lab3b` `docs/prompts/leave-request.md`에 초안과 최종 요청문이 있고, SKILL.md에 내 이름·경로·토큰이 없으며 `check_skill.py`를 통과하고, 토큰 파일이 빠진 커밋 1개가 있다.
