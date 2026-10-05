@@ -11,6 +11,7 @@ Claude Code 는 `.claude/` 아래 파일을 Edit/Write 도구로 쓸 때 설정�
              "template_from": "templates/exec.md",             # 선택: 출발점의 미리 만든 양식을 template.md 로
              "files": {"SKILL.md": "...전체 내용...", "template.md": "...전체 내용..."}}   # 선택: 쓸 파일 전체 내용(복사 뒤 덮어씀)
   python3 tools/make_skill.py set-frontmatter <skill_dir> <key> <value>     # 코치가 만든 스킬의 머리 부분 한 줄 바꾸기(없으면 추가)
+  python3 tools/make_skill.py replace-line <skill_dir> "<old>" "<new>"        # 코치가 만든 스킬 본문의 한 줄 교체(new 가 "" 이면 삭제) -- lab3 점검 결과 반영
   python3 tools/make_skill.py list                                           # 코치가 만든 스킬 목록
 
 안전장치: `to` 가 이미 있고 이 스크립트가 만든 폴더(.made-by-coach 표식)가 아니면 거부. 예시 스킬 이름(PROTECTED)은 to 로 쓸 수 없다.
@@ -103,6 +104,31 @@ def set_frontmatter(skill_dir, key, value):
     return 0
 
 
+def replace_line(skill_dir, old, new):
+    """코치가 만든 스킬의 SKILL.md 본문에서 `old` 를 담은 줄 하나를 `new` 로 바꾼다. new 가 빈 문자열이면 그 줄을 지운다."""
+    root = root_of(Path.cwd())
+    d = (root / skill_dir).resolve()
+    if not (d / MARK).exists():
+        return fail(f"코치가 만든 스킬이 아님(표식 없음): {skill_dir}")
+    if not old.strip():
+        return fail("바꿀 줄(old)이 비어 있음")
+    p = d / "SKILL.md"
+    lines = p.read_text(encoding="utf-8").split("\n")
+    hits = [i for i, ln in enumerate(lines) if old in ln]
+    if len(hits) != 1:
+        return fail(f"'{old}' 를 담은 줄이 {len(hits)}개 -- 정확히 한 줄이어야 함")
+    i = hits[0]
+    before = lines[i]
+    if new.strip():
+        lines[i] = new
+    else:
+        del lines[i]
+    p.write_text("\n".join(lines), encoding="utf-8")
+    print(f"OK   {skill_dir}/SKILL.md {i+1}행: {before!r} -> {new!r}")
+    print(json.dumps({"ok": True, "file": str(p.relative_to(root)), "line": i + 1, "before": before, "after": new}, ensure_ascii=False))
+    return 0
+
+
 def list_made():
     root = root_of(Path.cwd())
     made = sorted(str(p.parent.relative_to(root)) for p in (root / ".claude/skills").glob("*/" + MARK))
@@ -120,6 +146,8 @@ if __name__ == "__main__":
         sys.exit(build(a[1]))
     if a[0] == "set-frontmatter" and len(a) == 4:
         sys.exit(set_frontmatter(a[1], a[2], a[3]))
+    if a[0] == "replace-line" and len(a) == 4:
+        sys.exit(replace_line(a[1], a[2], a[3]))
     if a[0] == "list":
         sys.exit(list_made())
     print(__doc__); sys.exit(2)

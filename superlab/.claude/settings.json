@@ -16,6 +16,7 @@
       "Bash(bash tools/git_recent.sh *)",
       "Bash(bash tools/git_branch_diff.sh *)",
       "Edit(docs/worksheets/**)",
+      "Edit(docs/prompts/**)",
       "Edit(tools/*_fetch.py)",
       "Edit(CLAUDE.md)",
       "Edit(README.md)",
