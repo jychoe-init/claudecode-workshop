@@ -9,18 +9,18 @@
 - Claude Code 2.1.283 이상
 - Node.js
 - Python 3
-- 공통 토큰(`LAB_TOKEN`)과 공용 API 주소(`LAB_API_BASE`) -- 아래 시작 명령에 들어 있습니다
+- 공통 토큰(`LAB_TOKEN`, 워크숍 안내 자료에서 배부)과 공용 API 주소(`LAB_API_BASE`)
 
 ## 시작
 
 ```bash
 git clone https://github.com/jychoe-init/claudecode-workshop.git ~/claude-lab
 cd ~/claude-lab/superlab
-LAB_TOKEN=lab-1ar52p7g LAB_API_BASE=https://dapdz4klovswq.cloudfront.net bash tools/setup.sh
+LAB_TOKEN=<배부받은 토큰> LAB_API_BASE=https://dapdz4klovswq.cloudfront.net bash tools/setup.sh
 claude
 ```
 
-`setup.sh`는 토큰과 API 주소를 커밋되지 않는 파일 `.claude/settings.local.json`에 저장합니다. lab2의 사내 API 조회가 이 두 값을 씁니다.
+`<배부받은 토큰>` 자리에는 워크숍 안내 자료에 적힌 공통 토큰(`lab-` 뒤 8자)을 넣습니다. 토큰은 이 저장소에 적지 않습니다. `setup.sh`는 토큰과 API 주소를 커밋되지 않는 파일 `.claude/settings.local.json`에 저장하고, lab2의 사내 API 조회가 이 두 값을 씁니다.
 
 Claude Code에서 프로젝트와 설정을 확인합니다.
 

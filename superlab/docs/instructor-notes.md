@@ -2,7 +2,7 @@
 
 ## 수업 전 준비
 
-- [ ] 공용 API: `https://dapdz4klovswq.cloudfront.net/`(문서 페이지)와 `/v1/me`가 공통 토큰으로 응답하는지 확인합니다. 토큰은 팀별로 데이터가 다릅니다(`lab-1ar52p7g`=growth 등).
+- [ ] 공용 API: `https://dapdz4klovswq.cloudfront.net/`(문서 페이지)와 `/v1/me`가 공통 토큰으로 응답하는지 확인합니다. 토큰은 팀별로 데이터가 다르며, 값은 참가자용 HTML 안내 자료에만 적고 이 저장소(공개)에는 적지 않습니다.
 - [ ] 참가자 시작 명령 한 줄을 화면에 띄웁니다(README 시작 절과 같은 줄). 토큰과 API 주소는 `setup.sh`가 `settings.local.json`에 저장하고 커밋되지 않습니다.
 - [ ] `claude --version` 2.1.283 이상(lab3의 `/doctor prompt-audit`), Node.js, Python 3.
 - [ ] 강사 세션 리허설: `/workshop-coach lab1` 첫 메시지, `/doctor prompt-audit CLAUDE.md .claude/skills/meeting-notes/SKILL.md`(약 3분, 영어 보고서), `tools/hr_mcp.py` 시연(조회는 바로, 신청은 승인 창).
