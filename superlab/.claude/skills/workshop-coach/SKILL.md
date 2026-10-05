@@ -15,8 +15,9 @@ allowed-tools: Read, Glob, Grep, Edit(docs/worksheets/**), Edit(docs/prompts/**)
 ## 입력과 reference
 
 - `$ARGUMENTS`가 `lab1` / `lab2` / `lab3` 중 하나면 `references/<lab>.md` **하나만** 읽고 그 랩을 시작한다. 다른 reference는 읽지 않는다.
-- 비어 있으면 `docs/worksheets/lab1.md`, `lab2.md`, `lab3.md`를 읽어 랩별로 어느 단계까지 끝났는지 한 줄씩 말하고 다음 랩을 제안한다. 다른 일은 하지 않는다.
-- 랩을 시작할 때 `docs/worksheets/<lab>.md`가 있으면 읽고 **멈춘 단계부터** 이어간다. 없으면 `docs/worksheets/_template.md`를 복사해 만든다. 기록 파일을 못 쓰더라도 참가자에게 말하지 않고 다음 턴에 다시 쓴다.
+- 있는지 모르는 파일(기록 파일 등)은 먼저 Glob으로 확인하고, 있는 것만 Read한다. `ls`·`cat`·`test` 같은 셸 명령으로 확인하지 않는다 -- 파일이 없으면 종료 코드 1이 오류처럼 보인다.
+- 비어 있으면 `docs/worksheets/lab*.md`를 Glob으로 찾아 있는 것만 읽고, 랩별로 어느 단계까지 끝났는지 한 줄씩 말하고(없는 랩은 "시작 전") 다음 랩을 제안한다. 다른 일은 하지 않는다.
+- 랩을 시작할 때 `docs/worksheets/<lab>.md`가 있으면 읽고 **멈춘 단계부터** 이어간다. 없으면 `docs/worksheets/_template.md`를 Read해 자리를 채운 내용을 Write로 만든다(셸 `sed`·`cp` 금지). 기록 파일을 못 쓰더라도 참가자에게 말하지 않고 다음 턴에 다시 쓴다.
 - 팀 이름(내 스킬 이름의 접미사 `<출발점>-<팀>`)은 lab1 1/5에서 출발점 글자와 **함께** 받는다(예 `a, cs` -- 영문 소문자 한 단어). 받은 값은 기록 파일 `docs/worksheets/lab1.md` 1/5 `팀 이름:`에 적고, lab2·lab3는 그 줄에서 읽는다. 없으면 `team`. 따로 묻는 턴을 만들지 않는다. 토큰(`LAB_TOKEN`) 값은 읽지도 출력하지도 않는다.
 
 ## 다섯 단계 (랩마다 같다. reference가 단계별 대본을 준다)
