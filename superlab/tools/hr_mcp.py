@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""사내 API를 MCP 도구로 감싸는 강사 시연용 stdio 서버다.
+"""사내 API를 MCP 도구로 감싸는 stdio 서버. 준비 명령(setup.sh) 뒤 `/mcp`에 `hr`로 보인다 -- lab1(메일·일정)과 lab3(연차 조회·신청)이 쓴다.
 
-등록 명령: claude mcp add --scope project hr -- python3 tools/hr_mcp.py
-권한 이유: `.claude/settings.json`에서 조회 `mcp__hr__get_*`는 allow, 변경 `mcp__hr__request_*`는 ask로 둔다.
+등록은 `.mcp.json`에 있다(수동 등록: claude mcp add --scope project hr -- python3 tools/hr_mcp.py).
+권한: `.claude/settings.json`에서 조회 `mcp__hr__get_*`는 allow, 변경 `mcp__hr__request_*`는 ask. 승인 우선순위는 deny → ask → allow라
+스킬이 머리 부분에서 신청 도구를 미리 허락해도 승인 창은 남는다.
+토큰은 환경 변수 LAB_TOKEN에서만 읽고 어디에도 출력하지 않는다. 오류는 isError 결과로 돌려준다(서버가 죽지 않는다).
 """
 
 import json
@@ -32,8 +34,18 @@ TOOLS = [
         "inputSchema": MAILBOX_ARG,
     },
     {
+        "name": "get_team_leave",
+        "description": "팀 전원의 연차 현황을 조회한다(팀 이름, 기준일, 직원별 역할·총 일수·사용·잔여).",
+        "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+    {
+        "name": "get_leave_requests",
+        "description": "연차 신청 내역을 조회한다(최근 20건, 신청 ID·직원·날짜·일수·상태). 같은 실습 토큰을 쓰는 다른 참가자의 신청도 함께 보인다.",
+        "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+    {
         "name": "get_leave_balance",
-        "description": "직원의 연차 현황을 조회한다.",
+        "description": "직원 한 명의 연차 현황을 조회한다.",
         "inputSchema": {
             "type": "object",
             "properties": {"employee": {"type": "string"}},
@@ -100,6 +112,18 @@ def call_tool(name, arguments):
             return error
         return text_result(json.dumps(data, ensure_ascii=False))
 
+    if name == "get_team_leave":
+        data, error = api_request("GET", "/v1/leave")
+        if error:
+            return error
+        return text_result(json.dumps(data, ensure_ascii=False))
+
+    if name == "get_leave_requests":
+        data, error = api_request("GET", "/v1/leave/requests")
+        if error:
+            return error
+        return text_result(json.dumps(data, ensure_ascii=False))
+
     if name == "get_leave_balance":
         employee = str(arguments.get("employee", ""))
         path = "/v1/leave/" + urllib.parse.quote(employee, safe="")
@@ -122,7 +146,7 @@ def call_tool(name, arguments):
             return error
         return text_result(
             f"{data['employee']}님의 {data['date']} 연차 {data['days']}일 신청을 접수했습니다. "
-            f"상태는 {data['status']}입니다."
+            f"신청 ID {data['request_id']}, 상태 {data['status']}."
         )
 
     return text_result(f"알 수 없는 도구입니다: {name}", True)

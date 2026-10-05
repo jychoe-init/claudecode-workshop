@@ -13,7 +13,7 @@ ver=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1
 if [[ -z "$ver" ]]; then
   echo "claude 명령을 찾지 못했습니다. Claude Code 설치와 PATH를 확인하세요."
 elif [[ "$(printf '%s\n%s\n' "$need" "$ver" | sort -V | head -1)" != "$need" ]]; then
-  echo "Claude Code $ver — lab3의 /doctor prompt-audit 에는 $need 이상이 필요합니다. 그 단계만 강사 화면으로 봅니다."
+  echo "Claude Code $ver -- $need 이상을 권장합니다. 낮으면 'claude update'로 올리세요."
 else
   echo "Claude Code $ver 확인"
 fi
@@ -90,7 +90,7 @@ except Exception:
     d = {}
 base = os.environ["LAB_API_BASE"]
 d.setdefault("env", {})["LAB_API_BASE"] = base
-# hr_fetch.py 는 Bash 샌드박스 안에서 돌므로 이 도메인을 허용해야 한다
+# hr_mcp.py(MCP hr)와 로컬 대체 서버가 이 도메인·주소로 API를 부르므로 샌드박스에서 허용해야 한다
 domains = d.setdefault("sandbox", {}).setdefault("network", {}).setdefault("allowedDomains", [])
 host = base.split("://", 1)[1].split(":")[0]
 if host not in domains:
