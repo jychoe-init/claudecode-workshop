@@ -9,18 +9,16 @@
 - Claude Code 2.1.283 이상
 - Node.js
 - Python 3
-- 공통 토큰(`LAB_TOKEN`)과 공용 API 주소(`LAB_API_BASE`) -- 아래 시작 명령에 들어 있습니다
+- 배부받은 `LAB_TOKEN`
 
 ## 시작
 
 ```bash
 git clone https://github.com/jychoe-init/claudecode-workshop.git ~/claude-lab
 cd ~/claude-lab/ch4-kit
-LAB_TOKEN=lab-1ar52p7g LAB_API_BASE=https://dapdz4klovswq.cloudfront.net bash tools/setup.sh
+bash tools/setup.sh
 claude
 ```
-
-`setup.sh`는 토큰과 API 주소를 커밋되지 않는 파일 `.claude/settings.local.json`에 저장합니다. lab2의 사내 API 조회가 이 두 값을 씁니다.
 
 Claude Code에서 프로젝트와 설정을 확인합니다.
 
@@ -72,12 +70,14 @@ Claude Code에서 프로젝트와 설정을 확인합니다.
 
 ## 공용 API와 로컬 대체
 
-공용 API 문서: [워크샵 사내 API](https://dapdz4klovswq.cloudfront.net/)
+공용 API 주소와 토큰: 배포된 LAB 안내서에서 확인합니다. `bash tools/setup.sh`가 두 값을 `.claude/settings.local.json`의 `env`에 저장합니다.
 
-공용 API를 쓸 수 없으면 로컬 서버를 켜고, 저장된 주소를 로컬 주소로 바꾼 뒤 Claude Code를 다시 시작합니다. 공용 주소로 되돌릴 때는 시작 절의 `setup.sh` 줄을 다시 실행합니다.
+공용 API를 쓸 수 없으면 로컬 서버를 켜고 저장된 주소를 바꾼 뒤 Claude Code를 다시 시작합니다. `settings.local.json`의 값이 셸 환경변수보다 우선하므로 `LAB_API_BASE=… claude`로는 바뀌지 않습니다.
 
 ```bash
-python3 tools/lab_server.py
+python3 tools/lab_server.py &
 LAB_API_BASE=http://127.0.0.1:8787 bash tools/setup.sh
 claude
 ```
+
+공용 API로 되돌릴 때는 배포된 LAB 안내서의 주소로 같은 명령을 다시 실행합니다.
