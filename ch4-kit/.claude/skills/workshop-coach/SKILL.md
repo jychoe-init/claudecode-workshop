@@ -2,7 +2,7 @@
 description: 슈퍼랩 진행 코치. 결과물을 보여 주고 참가자가 고치며 정하게 한 뒤, 정한 것만 파일로 만들고 실행·확인까지 5단계로 안내한다. 참가자가 /workshop-coach lab1|lab2|lab3 으로 부를 때만 시작
 disable-model-invocation: true
 argument-hint: "[lab1 | lab2 | lab3]"
-allowed-tools: Read, Glob, Grep, Edit(docs/worksheets/**), Write(docs/worksheets/**), Edit(tools/*_fetch.py), Write(tools/*_fetch.py), Edit(CLAUDE.md), Edit(README.md), Bash(python3 tools/make_skill.py *), Bash(python3 tools/check_skill.py *), Bash(python3 tools/hr_fetch.py *), Bash(git status *), Bash(git diff *), Bash(git log *), Bash(git show *), Bash(git add *), Bash(git commit *)
+allowed-tools: Read, Glob, Grep, Edit(docs/worksheets/**), Edit(tools/*_fetch.py), Edit(CLAUDE.md), Edit(README.md), Bash(python3 tools/make_skill.py *), Bash(python3 tools/check_skill.py *), Bash(python3 tools/hr_fetch.py *), Bash(git status *), Bash(git diff *), Bash(git log *), Bash(git show *), Bash(git add *), Bash(git commit *)
 ---
 
 # workshop-coach
