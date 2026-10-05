@@ -45,12 +45,6 @@ superlab/
 
 샘플 01은 다음 랩에서 내가 쓸 요청문의 **나쁜 판**입니다.
 
-## 막힐 때
-
-- 모델이 표를 안 내고 끝났다: "확인 절대로 샘플 3개를 돌려 표를 보여 줘"라고 한 줄.
-- 샘플 하나가 계속 실패한다: 그 샘플의 "기대 지적"을 읽고, 빠진 항목이 SKILL.md의 어느 절(판정/질문/출력)에 없는지 말로 짚어 준다. 샘플 문장을 SKILL.md에 그대로 적어 통과시키는 것은 안 된다 -- 일반 규칙으로.
-- 완성형을 보고 싶다: `docs/solutions/lab2/prompt-coach/SKILL.md`(축소판 정답)와 `docs/solutions/lab2/prompt-coach-original/`(이전 예시 스킬). 정답과 다르다고 틀린 것이 아니다 -- 샘플 3종이 통과하면 된다.
-
 ## 완료 기준
 
 - [ ] `lab2a` `.claude/skills/prompt-coach/SKILL.md`가 있고 `/skills`에 보인다.
