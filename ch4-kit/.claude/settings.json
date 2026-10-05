@@ -6,8 +6,19 @@
       "Bash(git status *)",
       "Bash(git log *)",
       "Bash(git diff *)",
+      "Bash(git show *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
       "Bash(python3 -m json.tool *)",
+      "Bash(python3 tools/make_skill.py *)",
+      "Bash(python3 tools/check_skill.py *)",
+      "Bash(python3 tools/hr_fetch.py *)",
+      "Bash(bash tools/git_recent.sh *)",
+      "Bash(bash tools/git_branch_diff.sh *)",
       "Edit(docs/worksheets/**)",
+      "Edit(tools/*_fetch.py)",
+      "Edit(CLAUDE.md)",
+      "Edit(README.md)",
       "mcp__hr__get_*"
     ],
     "ask": [
@@ -18,6 +29,18 @@
     "deny": [
       "Read(.env*)",
       "Edit(.env*)",
+      "Edit(.claude/settings.json)",
+      "Edit(.claude/settings.local.json)",
+      "Edit(.gitignore)",
+      "Edit(.claude/skills/meeting-notes/**)",
+      "Edit(.claude/skills/weekly-report/**)",
+      "Edit(.claude/skills/standup/**)",
+      "Edit(.claude/skills/pr-desc/**)",
+      "Edit(.claude/skills/review-checklist/**)",
+      "Edit(.claude/skills/leave-report/**)",
+      "Edit(.claude/skills/prompt-coach/**)",
+      "Edit(.claude/skills/workshop-coach/**)",
+      "Edit(tools/hr_fetch.py)",
       "Bash(rm *)",
       "Bash(curl *)",
       "Bash(wget *)",
@@ -40,6 +63,16 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-check.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/tools/usage_log.sh"
           }
         ]
       }

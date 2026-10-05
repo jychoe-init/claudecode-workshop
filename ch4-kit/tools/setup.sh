@@ -64,4 +64,33 @@ PY
 fi
 
 npm test 2>/dev/null | tail -1
+
+# ---- 팀 이름 등록 (코치가 내 스킬 이름 <출발점>-<팀> 에 쓴다. settings.local.json 은 커밋 제외) ----
+team=$(python3 - "$LOCAL" <<'PY' 2>/dev/null
+import json, sys
+try:
+    print(json.load(open(sys.argv[1])).get("env", {}).get("LAB_TEAM", ""))
+except Exception:
+    print("")
+PY
+)
+if [[ -n "$team" ]]; then
+  echo "팀 이름 등록됨: $team (바꾸려면 $LOCAL 의 env.LAB_TEAM 을 수정)"
+else
+  read -r -p "팀 이름 한 단어(영문 소문자, 예: cs, pay, infra) [건너뛰기: Enter → team]: " team
+  team=$(printf '%s' "$team" | tr 'A-Z' 'a-z' | tr -cd 'a-z0-9-')
+  [[ -z "$team" ]] && team="team"
+  LAB_TEAM="$team" python3 - "$LOCAL" <<'PY'
+import json, os, sys
+p = sys.argv[1]
+try:
+    d = json.load(open(p))
+except Exception:
+    d = {}
+d.setdefault("env", {})["LAB_TEAM"] = os.environ["LAB_TEAM"]
+json.dump(d, open(p, "w"), ensure_ascii=False, indent=2)
+PY
+  echo "팀 이름 저장: $team → 내 스킬은 meeting-notes-$team 처럼 이름이 붙습니다"
+fi
+
 echo "준비 완료. 이제 'claude'를 실행하고 /status 로 설정 소스를 확인한 뒤 /workshop-coach lab1 로 시작하세요."
