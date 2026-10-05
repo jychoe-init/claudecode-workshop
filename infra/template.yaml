@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Claude Code Workshop - shared internal API (CloudFront + Lambda URL + DynamoDB + S3 docs)
+Description: Claude Code Workshop - shared internal API (CloudFront + HTTP API + Lambda + DynamoDB + S3 docs)
 
 Parameters:
   OriginSecret:
     Type: String
     NoEcho: true
-    Description: CloudFront -> Lambda 비밀 헤더 값. 직접 Lambda URL 호출을 막는다.
+    Description: CloudFront -> 오리진 비밀 헤더 값. API Gateway 직접 호출을 막는다.
   StackPrefix:
     Type: String
     Default: ccw-lab
@@ -60,19 +60,44 @@ Resources:
           TABLE_NAME: !Ref Table
           ORIGIN_SECRET: !Ref OriginSecret
 
-  FnUrl:
-    Type: AWS::Lambda::Url
+  # 계정 정책상 퍼블릭 Lambda Function URL이 차단되어 HTTP API를 CloudFront 오리진으로 쓴다.
+  # payload 2.0 이벤트는 Function URL과 같은 형식이라 handler.py 변경이 없다.
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
     Properties:
-      TargetFunctionArn: !GetAtt Fn.Arn
-      AuthType: NONE
+      Name: !Sub "${StackPrefix}-api"
+      ProtocolType: HTTP
 
-  FnUrlPermission:
+  HttpApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt Fn.Arn
+      PayloadFormatVersion: "2.0"
+      TimeoutInMillis: 10000
+
+  HttpApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: ANY /v1/{proxy+}
+      Target: !Sub "integrations/${HttpApiIntegration}"
+
+  HttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: $default
+      AutoDeploy: true
+
+  HttpApiPermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref Fn
-      Action: lambda:InvokeFunctionUrl
-      Principal: "*"
-      FunctionUrlAuthType: NONE
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*/*/v1/*"
 
   SiteBucket:
     Type: AWS::S3::Bucket
@@ -142,7 +167,7 @@ Resources:
             OriginAccessControlId: !GetAtt OAC.Id
             S3OriginConfig: { OriginAccessIdentity: "" }
           - Id: api
-            DomainName: !Select [2, !Split ["/", !GetAtt FnUrl.FunctionUrl]]
+            DomainName: !Sub "${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
             CustomOriginConfig: { OriginProtocolPolicy: https-only, OriginSSLProtocols: [TLSv1.2] }
             OriginCustomHeaders:
               - { HeaderName: x-lab-origin, HeaderValue: !Ref OriginSecret }
@@ -169,6 +194,6 @@ Outputs:
     Value: !Ref Table
   SiteBucket:
     Value: !Ref SiteBucket
-  FunctionUrl:
-    Value: !GetAtt FnUrl.FunctionUrl
+  ApiEndpoint:
+    Value: !GetAtt HttpApi.ApiEndpoint
     Description: 직접 호출은 비밀 헤더가 없어 403. CloudFront 주소를 쓴다.
