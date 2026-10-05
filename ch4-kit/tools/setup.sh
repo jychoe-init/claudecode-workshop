@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 슈퍼랩 준비 스크립트 — 킷 폴더(ch4-kit) 안에서 한 번 실행한다.
+# 슈퍼랩 준비 스크립트 — 슈퍼랩 폴더(ch4-kit) 안에서 한 번 실행한다.
 # 1) Claude Code 버전(2.1.283 이상)·node·python3 확인
 # 2) Git 이력 확인 (클론한 커밋이 /standup·/pr-desc 의 재료)
 # 3) 참가자 토큰(LAB_TOKEN)을 .claude/settings.local.json 의 env 에 저장 — 커밋되지 않는 파일

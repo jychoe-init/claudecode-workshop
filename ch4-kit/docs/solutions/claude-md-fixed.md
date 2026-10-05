@@ -1,7 +1,7 @@
 # 수정된 CLAUDE.md
 
 ```markdown
-# 팀 스타터 킷
+# 팀 Claude Code 설정
 
 이 저장소는 팀 공통 개발 흐름을 연습하기 위한 최소 Node.js 프로젝트다.
 검사는 `npm test`로 실행한다.

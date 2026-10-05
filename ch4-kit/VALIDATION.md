@@ -38,8 +38,8 @@
 | 셸 | setup.sh: Git 저장소 인식(커밋 2개), 중첩 .git 없음 | PASS |  |
 | 셸 | setup.sh: Slack 질문 없음 | PASS |  |
 | 셸 | setup.sh 재실행: 토큰 등록됨 표시(앞 4자리만) | PASS |  |
-| 셸 | usage_log.sh(jq) -> usage.csv 헤더+행 | PASS | 2026-10-05T01:11:03Z,abc,default,medium,10 |
-| 셸 | usage_log.sh(jq 없음, python3 대체) 행 추가 | PASS | 2026-10-05T01:11:03Z,abc,default,medium,10 |
+| 셸 | usage_log.sh(jq) -> usage.csv 헤더+행 | PASS | 2026-10-05T01:41:27Z,abc,default,medium,10 |
+| 셸 | usage_log.sh(jq 없음, python3 대체) 행 추가 | PASS | 2026-10-05T01:41:27Z,abc,default,medium,10 |
 | 셸 | usage_log.sh 비JSON 입력에도 exit 0 | PASS |  |
 | 셸 | post-check.sh 정상 JS exit 0 / 구문 오류 JS exit 2 | PASS |  |
 | 셸 | npm test PASS | PASS | PASS |
@@ -78,6 +78,10 @@
 | 스킬 | pr-desc: 바꿀 곳 표식 >= 3 + template.md | PASS | 표식 3 |
 | 스킬 | leave-report: 바꿀 곳 표식 >= 3  | PASS | 표식 4 |
 | 스킬 | leave-report 첫 줄이 hr_fetch.py leave 주입 | PASS |  |
+| 스킬 | weekly-report/templates/ 미리 만든 양식 >= 3, 첫 줄 '<!-- 양식:' | PASS | ['dev.md', 'exec.md', 'ops.md'] |
+| 스킬 | meeting-notes/templates/ 미리 만든 양식 >= 3, 첫 줄 '<!-- 양식:' | PASS | ['exec.md', 'project.md', 'short.md'] |
+| 스킬 | standup/templates/ 미리 만든 양식 >= 2, 첫 줄 '<!-- 양식:' | PASS | ['async.md', 'sprint.md'] |
+| 스킬 | pr-desc/templates/ 미리 만든 양식 >= 2, 첫 줄 '<!-- 양식:' | PASS | ['checklist.md', 'release.md'] |
 | 스킬 | 새로 만들기(ⓔ) 빈 템플릿 docs/templates/skill-blank/{SKILL,template}.md | PASS |  |
 | 스킬 | standup/pr-desc 주입 명령 3개 git 안에서 exit 0 | PASS |  |
 | 스킬 | 주입 명령 git 없는 디렉터리에서도 exit 0(폴백) | PASS |  |
@@ -85,7 +89,7 @@
 | 코치 | allowed-tools: Write 는 docs/worksheets/** 로만, Edit 없음 | PASS | Read, Write(docs/worksheets/**), Bash(python3 -m json.tool *), Bash(git status *), Bash(git diff *), Bash(git log *) |
 | 코치 | SKILL.md 두 원칙(에셋 쓰지 않음·비교 기준은 워크시트) + 네 역할 | PASS |  |
 | 코치 | references/lab1.md 절 9개 | PASS |  |
-| 코치 | references/lab1.md 결정마다 선택지 결과 비교 표(| 결과 |) | PASS | 5 |
+| 코치 | references/lab1.md 결정마다 선택지 결과 비교 표(| 결과 |) | PASS | 4 |
 | 코치 | references/lab2.md 절 9개 | PASS |  |
 | 코치 | references/lab2.md 결정마다 선택지 결과 비교 표(| 결과 |) | PASS | 5 |
 | 코치 | references/lab3.md 절 9개 | PASS |  |
@@ -100,5 +104,5 @@
 | 정적 | CLAUDE.md 결함② make lint 참조(Makefile 없음) | PASS |  |
 | 정적 | CLAUDE.md 결함③ rules/testing.md 와 모순 | PASS |  |
 | 정적 | samples 녹취에 인젹션 문장 1개 | PASS |  |
-| 정적 | Slack·notify·received.log·slack_mock·hooks-block2·profiles/·길 A/B 잔존 0 | PASS |  |
-총 101건, PASS 101, FAIL 0
+| 정적 | Slack·notify·received.log·slack_mock·hooks-block2·profiles/·길 A/B·킷 잔존 0 | PASS |  |
+총 105건, PASS 105, FAIL 0
