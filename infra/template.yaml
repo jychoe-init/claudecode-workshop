@@ -90,6 +90,10 @@ Resources:
       ApiId: !Ref HttpApi
       StageName: $default
       AutoDeploy: true
+      # API Gateway 주소로 직접 들어오는 요청이 Lambda까지 몰리지 않게 한다. 70명 실습 기준 여유 있게 잡았다.
+      DefaultRouteSettings:
+        ThrottlingRateLimit: 100
+        ThrottlingBurstLimit: 200
 
   HttpApiPermission:
     Type: AWS::Lambda::Permission

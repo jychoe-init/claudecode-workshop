@@ -2,7 +2,7 @@
 """참가자 토큰을 만들어 DynamoDB에 등록하고, 배부용 CSV를 저장소 밖에 쓴다.
 
 사용:
-  python3 infra/scripts/make_tokens.py --count 80 --expires 2026-11-30 \
+  python3 infra/scripts/make_tokens.py --count 1 --expires 2026-10-08 \
       --table ccw-lab-api --out ~/Downloads/ccw-tokens.csv [--profile <your-profile>] [--region ap-northeast-2] [--dry-run]
 
 - 토큰: lab- + 소문자·숫자 8자 (secrets 모듈). 저장소 안에는 절대 쓰지 않는다.

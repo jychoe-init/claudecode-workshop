@@ -14,7 +14,20 @@ import urllib.request
 
 DEFAULT_BASE = "https://dapdz4klovswq.cloudfront.net"
 
+# 메일·일정은 Microsoft Graph 응답 형식({"value": [...]})을 그대로 넘긴다. 실제 Outlook MCP로 바꿔도 스킬이 같은 필드를 읽는다.
+GRAPH_TOOLS = {"get_sent_mail": "/v1/mail/sent", "get_events": "/v1/calendar"}
+
 TOOLS = [
+    {
+        "name": "get_sent_mail",
+        "description": "최근 일주일간 내가 보낸 메일 목록을 조회한다(Graph message: subject, sentDateTime, toRecipients, bodyPreview).",
+        "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+    {
+        "name": "get_events",
+        "description": "지난 일주일과 다가올 며칠의 내 일정을 조회한다(Graph event: subject, start, end, attendees).",
+        "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
     {
         "name": "get_leave_balance",
         "description": "직원의 연차 현황을 조회한다.",
@@ -77,6 +90,12 @@ def api_request(method, path, payload=None):
 
 
 def call_tool(name, arguments):
+    if name in GRAPH_TOOLS:
+        data, error = api_request("GET", GRAPH_TOOLS[name])
+        if error:
+            return error
+        return text_result(json.dumps(data, ensure_ascii=False))
+
     if name == "get_leave_balance":
         employee = str(arguments.get("employee", ""))
         path = "/v1/leave/" + urllib.parse.quote(employee, safe="")
