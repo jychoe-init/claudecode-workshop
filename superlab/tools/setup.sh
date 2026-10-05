@@ -90,7 +90,7 @@ except Exception:
     d = {}
 base = os.environ["LAB_API_BASE"]
 d.setdefault("env", {})["LAB_API_BASE"] = base
-# hr_fetch.py 는 Bash 샌드박스 안에서 돌므로 이 도메인을 허용해야 한다
+# hr_mcp.py(MCP hr)와 로컬 대체 서버가 이 도메인·주소로 API를 부르므로 샌드박스에서 허용해야 한다
 domains = d.setdefault("sandbox", {}).setdefault("network", {}).setdefault("allowedDomains", [])
 host = base.split("://", 1)[1].split(":")[0]
 if host not in domains:
