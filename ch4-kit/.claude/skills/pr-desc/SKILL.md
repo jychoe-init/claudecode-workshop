@@ -19,5 +19,3 @@ allowed-tools: Bash(bash tools/git_branch_diff.sh *)
 
 <!-- 바꿀 곳: 이 스킬이 절대 하면 안 되는 실수 하나를 적는다. -->
 커밋 메시지를 그대로 옮기거나 변경하지 않은 파일을 언급하지 않는다.
-
-마지막 줄에 `(effort: ${CLAUDE_EFFORT})`를 출력한다.

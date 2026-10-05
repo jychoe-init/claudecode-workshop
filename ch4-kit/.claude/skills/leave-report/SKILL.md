@@ -24,4 +24,3 @@ effort: low
 - JSON에 없는 직원·수치를 만들지 않습니다.
 - 오류 JSON(`error` 필드)이면 원인과 `LAB_API_BASE` 안내만 출력합니다.
 
-(effort: ${CLAUDE_EFFORT})
