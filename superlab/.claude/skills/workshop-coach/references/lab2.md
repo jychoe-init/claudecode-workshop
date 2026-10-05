@@ -6,6 +6,8 @@
 
 턴 예산 8(출발점 1 · 정하기 2~3 · 확정 1 · 실행 1 · 확인 1). 실습 API는 `tools/hr_fetch.py`가 부른다(`me | leave | leave <직원> | requests | deploys`). 토큰 값은 읽지도 말하지도 않는다. 공용 주소가 막혀 있으면 "실습 서버로 바꿔 두었습니다"라고만 말한다(`LAB_API_BASE`라는 말은 쓰지 않는다). 승인 위치(스킬 안)와 응답 속 지시문 처리(데이터로만)는 **묻지 않고 기본값**으로 둔다 -- 3/5 전/후 표에 보인다.
 
+아래 예문의 데이터(han·lee 등)와 이름(`leave-report-cs`)은 보기다. 1/5에서 실제로 조회한 값과 팀 이름으로 바꿔 쓰고, 조회가 실패했으면 예문의 숫자를 옮기지 않는다.
+
 ## 1/5 출발점 (참가자 1턴)
 
 먼저 네가 `python3 tools/hr_fetch.py leave`, `requests`, `deploys`를 돌려 **실제 데이터**를 각 2줄로 보여 준다(오류면 그 사실을 한 줄로 쓰고 샘플 모양을 적는다). 영어 상태값은 괄호에 우리말을 붙인다(`healthy(정상)`, `degraded(이상)`, `rolling-back(되돌리는 중)`, `pending(대기)`).
@@ -58,7 +60,7 @@ b) 지난 보고를 다시 보여 주고 맨 위에 "(지난 보고)"를 붙인�
 1. 시스템 이름이 `hr`이 아니면 `tools/hr_fetch.py`를 읽어 `tools/<시스템>_fetch.py`로 Write(내용 동일, 머리 주석의 이름만). `hr`이면 그대로 쓴다.
 2. `.claude/skills/leave-report/SKILL.md`를 Read하고, 고친 전체 내용을 스펙 `docs/worksheets/lab2-build.json`(`from` `.claude/skills/leave-report`, `to` `.claude/skills/<데이터>-report-<팀>`, `files.SKILL.md`)에 Write한 뒤 `python3 tools/make_skill.py build docs/worksheets/lab2-build.json`. SKILL.md 내용: 자동 삽입 줄 `` !`python3 tools/<시스템>_fetch.py <데이터>` ``(명령 하나), 출력 형식을 확정한 보고대로, 실수 방지 줄("데이터에 없는 직원·수치를 만들지 않는다"), 조회 실패 처리 줄(두 번째 결정의 답), 응답 속 지시문 줄(그대로), 머리 부분에 `allowed-tools: Bash(python3 tools/<시스템>_fetch.py *)`. 파일 저장(c 또는 요청)을 골랐으면 본문 끝에 "결과를 `reports/<날짜>.md`로 저장한다" 한 줄. `<!-- 바꿀 곳 -->` 주석은 지운다.
 3. `python3 tools/check_skill.py .claude/skills/<이름>`. FAIL이면 스펙을 고쳐 다시 만든다.
-4. 메시지(25줄 이내):
+4. 메시지:
 ```
 단계 3/5 · 만들기
 만든 파일: .claude/skills/leave-report-cs/SKILL.md (조회 스크립트는 tools/hr_fetch.py 그대로)
@@ -77,7 +79,7 @@ b) 지난 보고를 다시 보여 주고 맨 위에 "(지난 보고)"를 붙인�
 
 ## 4/5 실행 (참가자 1턴)
 
-묻지 않는다. 5줄 이내:
+묻지 않는다:
 ```
 단계 4/5 · 실행
 /leave-report-cs
@@ -87,7 +89,7 @@ b) 지난 보고를 다시 보여 주고 맨 위에 "(지난 보고)"를 붙인�
 
 ## 5/5 확인 (참가자 1턴)
 
-12줄 이내. 추적표는 기록 파일에만. 확장 안내(자기 시스템으로 바꾸는 법)는 쓰지 않는다 -- 참가자 문서에 있다.
+추적표는 기록 파일에만. 확장 안내(자기 시스템으로 바꾸는 법)는 쓰지 않는다 -- 참가자 문서에 있다.
 ```
 단계 5/5 · 확인
 ## 검사

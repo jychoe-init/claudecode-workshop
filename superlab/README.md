@@ -9,18 +9,18 @@
 - Claude Code 2.1.283 이상
 - Node.js
 - Python 3
-- 공통 토큰(`LAB_TOKEN`, 워크숍 안내 자료에서 배부)과 공용 API 주소(`LAB_API_BASE`)
+- 공통 토큰(`LAB_TOKEN`)과 공용 API 주소(`LAB_API_BASE`) -- 배포된 LAB 안내서에서 확인합니다
 
 ## 시작
 
 ```bash
 git clone https://github.com/jychoe-init/claudecode-workshop.git ~/claude-lab
 cd ~/claude-lab/superlab
-LAB_TOKEN=<배부받은 토큰> LAB_API_BASE=https://dapdz4klovswq.cloudfront.net bash tools/setup.sh
+LAB_TOKEN=<LAB 안내서의 토큰> LAB_API_BASE=<LAB 안내서의 주소> bash tools/setup.sh
 claude
 ```
 
-`<배부받은 토큰>` 자리에는 워크숍 안내 자료에 적힌 공통 토큰(`lab-` 뒤 8자)을 넣습니다. 토큰은 이 저장소에 적지 않습니다. `setup.sh`는 토큰과 API 주소를 커밋되지 않는 파일 `.claude/settings.local.json`에 저장하고, lab2의 사내 API 조회가 이 두 값을 씁니다.
+두 자리에는 배포된 LAB 안내서(참가자용 HTML)의 값을 넣습니다. 토큰과 주소는 이 저장소에 적지 않습니다. `setup.sh`는 두 값을 커밋되지 않는 파일 `.claude/settings.local.json`에 저장하고, 주간보고·사내 API 조회가 이 값을 씁니다.
 
 Claude Code에서 프로젝트와 설정을 확인합니다.
 
@@ -64,9 +64,9 @@ Claude Code에서 프로젝트와 설정을 확인합니다.
 | 스킬 | 워크샵 안 역할 | 사용 예 |
 |---|---|---|
 | `meeting-notes` | lab1 출발점 a 회의록 | `/meeting-notes samples/meeting-2026-10-02.txt` |
-| `weekly-report` | lab1 출발점 b 주간보고 | `/weekly-report samples/weekly-memo.md` |
+| `weekly-report` | lab1 출발점 b 주간보고 (메일·일정) | `/weekly-report` |
 | `standup` | lab1 출발점 c 스탠드업 | `/standup "오늘 한 일"` |
-| `pr-desc` | lab1 출발점 d PR 설명 | `/pr-desc` |
+| `weekly-report-dev` | lab1 출발점 d 개발자 주간보고 (커밋) | `/weekly-report-dev "막힌 것"` |
 | `review-checklist` | 참조형 스킬 본보기 | 변경 리뷰 요청 |
 | `leave-report` | lab2 출발점 -- 조회 결과를 양식으로 정리하는 본보기 | `/leave-report` |
 | `prompt-coach` | 지시 프롬프트 진단·다시 쓰기 (lab3의 기준) | `/prompt-coach "내 초안"` |
@@ -74,12 +74,14 @@ Claude Code에서 프로젝트와 설정을 확인합니다.
 
 ## 공용 API와 로컬 대체
 
-공용 API 문서: [워크샵 사내 API](https://dapdz4klovswq.cloudfront.net/)
+공용 API 주소와 토큰: 배포된 LAB 안내서에서 확인합니다. `bash tools/setup.sh`가 두 값을 `.claude/settings.local.json`의 `env`에 저장합니다.
 
-공용 API를 쓸 수 없으면 로컬 서버를 켜고, 저장된 주소를 로컬 주소로 바꾼 뒤 Claude Code를 다시 시작합니다. 공용 주소로 되돌릴 때는 시작 절의 `setup.sh` 줄을 다시 실행합니다.
+공용 API를 쓸 수 없으면 로컬 서버를 켜고, 저장된 주소를 로컬 주소로 바꾼 뒤 Claude Code를 다시 시작합니다.
 
 ```bash
-python3 tools/lab_server.py
+python3 tools/lab_server.py &
 LAB_API_BASE=http://127.0.0.1:8787 bash tools/setup.sh
 claude
 ```
+
+공용 API로 되돌릴 때는 배포된 LAB 안내서의 주소로 같은 명령을 다시 실행합니다.

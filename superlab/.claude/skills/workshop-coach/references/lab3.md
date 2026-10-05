@@ -8,6 +8,8 @@
 
 쓰는 말: "저장소 지시문 점검"(`/doctor prompt-audit`은 명령 이름 그대로, 첫 등장 때 "낡은 문장·없는 명령·서로 모순을 찾아 주는 점검"으로 한 번 설명). "감사", "린트", "cruft"는 쓰지 않는다.
 
+아래 예문의 스킬 이름(`meeting-notes-cs`)·파일 이름·수치(`812자 → 790자`, 커밋 `a1b2c3d`)는 출발점이 a, 팀이 cs일 때의 보기다. 실제로 읽은 값으로 바꿔 쓴다.
+
 ## 1/5 출발점 (참가자 1턴) -- 평소 쓰는 지시 프롬프트 붙이기
 
 ```
@@ -48,7 +50,7 @@ a/b/c면 `docs/prompts/examples/`의 `meeting.md` / `review.md` / `translate.md`
 점검이 찍은 것 중 고칠 만한 세 개입니다. 우리 팀 CLAUDE.md에도 생길 법한 것 하나를 고르면 그 줄을 고칩니다.
 a) CLAUDE.md 9행 "어떤 요청이든 답하기 전에 항상 step by step으로 깊고 신중하게 생각하라" → 요즘 모델에는 효과가 없는 말. 지우고, 생각의 깊이는 내 스킬의 설정 줄 effort(얼마나 깊이 생각할지, 지금 low)가 정합니다   (추천: 방금 내 프롬프트에서도 나온 것과 같은 종류)
 b) CLAUDE.md 10행 "커밋 전 반드시 `make lint`를 실행한다" → 이 저장소에 없는 명령이라 실행하면 실패. 있는 명령 `npm test`로 바꾼다
-c) CLAUDE.md 11행 "테스트는 수정 요청이 있을 때만 실행한다" → 규칙 파일(.claude/rules/testing.md)의 "편집 뒤 항상 npm test"와 모순. 11행을 지운다(규칙 파일이 이긴다)
+c) CLAUDE.md 11행 "테스트는 수정 요청이 있을 때만 실행한다" → 규칙 파일(.claude/rules/testing.md)의 "src/**/*.js를 편집한 뒤에는 항상 npm test"와 부딪힌다. 둘 다 읽히면 어느 쪽을 따를지 모델이 매번 골라야 한다. 11행을 지운다
 참고(이번엔 안 고침): `.env`를 읽지 말라는 줄은 맞는 규칙인데 이유가 없다고 함 / 내 스킬의 "git 명령은 사용하지 않는다" 줄
 a처럼 한 글자로 답하면서 예측 하나를 덧붙여 주세요. 내 스킬 meeting-notes-cs는 양식 채우기라 effort를 low로 두겠습니다 -- 이대로 다시 돌리면 결과 길이가 지금(812자)보다 늘지 / 줄지 / 비슷할지. 예: `a, 비슷`
 ```
@@ -80,7 +82,7 @@ README 세 줄(제안)은 제가 추린 초안입니다. 고칠 곳이 있으면
 
 ## 4/5 실행 (참가자 1턴 -- 명령은 3/5 메시지 끝에 이미 줬다)
 
-실행 명령은 3/5 메시지의 마지막 줄이다(회의록이면 `samples/meeting-2026-10-02.txt`, 주간보고면 `samples/weekly-memo.md`, 스탠드업·PR 설명은 인자 없음). 참가자가 전/후 표를 고쳐 3/5가 한 번 더 돌면 같은 명령을 다시 준다. 따로 `단계 4/5 · 실행` 메시지를 보내야 할 때(참가자가 "그래서 뭘 치면 돼?"처럼 물을 때)만 5줄 이내로:
+실행 명령은 3/5 메시지의 마지막 줄이다(회의록이면 `samples/meeting-2026-10-02.txt`, 주간보고·스탠드업·개발자 주간보고는 인자 없음). 참가자가 전/후 표를 고쳐 3/5가 한 번 더 돌면 같은 명령을 다시 준다. 따로 `단계 4/5 · 실행` 메시지를 보내야 할 때(참가자가 "그래서 뭘 치면 돼?"처럼 물을 때)만 5줄 이내로:
 ```
 단계 4/5 · 실행
 /meeting-notes-cs samples/meeting-2026-10-02.txt
@@ -91,7 +93,7 @@ README 세 줄(제안)은 제가 추린 초안입니다. 고칠 곳이 있으면
 ## 5/5 확인 (참가자 1턴) -- 커밋은 네가 한다
 
 1. `git status --short`로 바뀐 파일을 확인한다(`settings.local.json`·`usage.csv`가 **없음**을 확인 -- `.gitignore`가 뺀다). 저장소의 `.env`는 가짜 값이 든 연습 파일이라 커밋에 있는 것이 맞다 -- 언급하지 않는다. `CLAUDE.md`의 고르지 않은 지적 줄(`make lint` 등)은 따르지도 언급하지도 않는다.
-2. `git add -A` → `git commit -m "feat: <팀> team Claude Code repo -- prompts, CLAUDE.md fix, effort"` → `git show --stat --oneline HEAD`. 참가자에게 커밋하라고 하지 않는다. `git push`는 하지 않는다(원격은 참가자 팀 저장소다).
+2. `git add -A` → `git commit -m "feat(kit): add <팀> team prompts, CLAUDE.md fix and effort"`(저장소 규칙 `.claude/rules/commits.md`의 Conventional Commits 형식) → `git show --stat --oneline HEAD`. 참가자에게 커밋하라고 하지 않는다. `git push`는 하지 않는다(원격은 참가자 팀 저장소다).
 3. 메시지(12줄 이내):
 ```
 단계 5/5 · 확인
@@ -102,7 +104,7 @@ README 세 줄(제안)은 제가 추린 초안입니다. 고칠 곳이 있으면
 | 다시 쓴 프롬프트가 docs/prompts/에 있다 | 통과 -- docs/prompts/cs-meeting-summary.md |
 | 내 스킬 effort = 정한 값 | 통과 -- effort: low |
 | 예측 → 실제 (결과 길이) | 비슷 → 812자 → 790자 (2/5에서 받은 예측) |
-| README 첫 세 줄 = 확정한 세 줄 · 커밋에 토큰 파일(settings.local.json) 없음 | 통과 -- a1b2c3d (4 files) |
+| README 첫 세 줄 = 확정한 세 줄 · 커밋에 토큰 파일(settings.local.json) 없음 | 통과 -- a1b2c3d feat(kit): add cs team … (4 files) |
 다음: 새 지시를 쓸 때는 `/prompt-coach "…"`로 먼저 진단받고, 저장소 지시문은 분기마다 `/doctor prompt-audit CLAUDE.md`로 점검하세요. 이 커밋을 팀 저장소 주소로 올리는 것은 강사가 안내합니다.
 ```
 확인하지 못한 항목은 `미확인`으로 둔다(통과로 쓰지 않는다). 참가자에게 할 일을 남기지 않는다. 기록 파일 5/5에 검사 표와 추적표(파일 줄 ↔ 2/5의 참가자 말)를 적는다.

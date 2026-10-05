@@ -16,7 +16,7 @@
 </head>
 <body>
 <h1>워크샵 사내 API</h1>
-<p>Claude Code 워크샵 실습용 가짜 HR·배포 시스템입니다. 모든 데이터는 가짜이며 토큰마다 다른 팀이 보입니다.
+<p>Claude Code 워크샵 실습용 가짜 HR·배포 시스템입니다. 모든 데이터는 가짜이며 실습은 공통 토큰 하나를 함께 써서 모두 같은 팀 데이터를 봅니다.
 기본 주소는 이 페이지의 주소와 같습니다(<code>https://&lt;이 호스트&gt;/v1/...</code>).</p>
 
 <div class="note">인증: 모든 <code>/v1/*</code> 요청에 <code>Authorization: Bearer lab-xxxxxxxx</code> 헤더. 토큰은 배부받은 것을 쓰고, 저장소에 커밋하지 않습니다(<code>.claude/settings.local.json</code>의 <code>env.LAB_TOKEN</code>).</div>
@@ -31,9 +31,16 @@
    "annual":15,"used":6,"remaining":9}, …]}</pre></td></tr>
 <tr><td><code>GET /v1/leave/{직원}</code></td><td>구성원 한 명의 연차</td><td><pre>{"team":"payments","employee":"kim",
  "annual":15,"used":6,"remaining":9}</pre></td></tr>
-<tr><td><code>GET /v1/leave/requests</code></td><td>내 토큰으로 넣은 신청 목록</td><td><pre>{"team":"payments","requests":[…]}</pre></td></tr>
+<tr><td><code>GET /v1/leave/requests</code></td><td>신청 목록(최근 20건. 공통 토큰이라 모두의 신청이 보입니다)</td><td><pre>{"team":"payments","requests":[…]}</pre></td></tr>
 <tr><td><code>POST /v1/leave/requests</code></td><td>연차 신청(변경 동작). 본문 <code>{"employee","date","days"}</code></td><td><pre>201 {"request_id":"REQ-01234","employee":"kim",
  "date":"2026-10-30","days":1,"status":"pending"}</pre></td></tr>
+<tr><td><code>GET /v1/mail/{메일함}/sent</code><br><code>GET /v1/mail/sent</code></td><td>직무별 실습 메일함(<code>planning</code> 기획·운영 · <code>sales</code> 영업 · <code>cs</code> CS · <code>hr</code> 인사, 생략하면 planning)에서 보고 주에 보낸 메일 7통(Microsoft Graph message 형식)</td><td><pre>{"value":[{"subject":"[요청] 하반기 마케팅 예산 집행 승인",
+ "sentDateTime":"2026-09-29T02:10:00Z",
+ "toRecipients":[{"emailAddress":{"name":"kim", …}}],
+ "bodyPreview":"…", …}]}</pre></td></tr>
+<tr><td><code>GET /v1/calendar/{메일함}</code><br><code>GET /v1/calendar</code></td><td>보고 주 일정 5건과 오늘 뒤 근무일 일정 2건(Microsoft Graph event 형식). 보고 주는 금~일이면 이번 주, 월~목이면 지난주</td><td><pre>{"value":[{"subject":"사업기획팀 주간 정례",
+ "start":{"dateTime":"2026-09-28T10:00:00","timeZone":"Asia/Seoul"},
+ "attendees":[…], …}]}</pre></td></tr>
 <tr><td><code>GET /v1/deploys</code></td><td>서비스별 배포 상태(개발 트랙용)</td><td><pre>{"team":"payments","deploys":[{"service":"order-api",
  "version":"v3.12.4","status":"healthy", …}]}</pre></td></tr>
 </table>
@@ -44,8 +51,9 @@
 <tr><td>401 <code>unauthorized</code></td><td>헤더가 없거나 토큰 형식이 아님</td></tr>
 <tr><td>403 <code>invalid_token</code></td><td>등록되지 않았거나 만료된 토큰</td></tr>
 <tr><td>404 <code>unknown_employee</code></td><td>내 팀 구성원이 아님</td></tr>
-<tr><td>409 <code>insufficient_balance</code></td><td>잔여(대기 중 포함)보다 많이 신청</td></tr>
-<tr><td>429 <code>rate_limited</code></td><td>토큰당 분당 60회 초과</td></tr>
+<tr><td>404 <code>unknown_mailbox</code></td><td>planning·sales·cs·hr 이외의 메일함</td></tr>
+<tr><td>409 <code>insufficient_balance</code></td><td>잔여보다 많이 신청</td></tr>
+<tr><td>429 <code>rate_limited</code></td><td>토큰당 분당 3000회 초과</td></tr>
 </table>
 
 <h2>Claude Code 스킬에서 쓰기</h2>

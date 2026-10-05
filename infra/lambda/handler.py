@@ -36,7 +36,8 @@ class DynamoStore:
                             "ttl": int(time.time()) + 30 * 86400})
 
     def list_requests(self, token: str) -> list:
-        r = _ddb.query(KeyConditionExpression="pk = :pk", ExpressionAttributeValues={":pk": f"REQ#{token}"})
+        r = _ddb.query(KeyConditionExpression="pk = :pk", ExpressionAttributeValues={":pk": f"REQ#{token}"},
+                       ScanIndexForward=False, Limit=lab_api.REQUESTS_SHOWN)
         out = []
         for it in r.get("Items", []):
             d = {k: v for k, v in it.items() if k not in ("pk", "sk", "ttl")}
