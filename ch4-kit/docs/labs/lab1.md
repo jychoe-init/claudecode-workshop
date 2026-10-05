@@ -20,7 +20,7 @@
 | a) 회의록 `meeting-notes` | 회의 녹취 txt → 결정사항·액션 아이템(담당·기한)·미결 | 회의가 많은 사람. 샘플 녹취가 있어 바로 볼 수 있습니다 | `/meeting-notes samples/meeting-2026-10-02.txt` |
 | b) 주간보고 `weekly-report` | 이번 주 보낸 메일·일정(자동으로 읽음) → 성과·다음 주 계획·이슈 | 매주 보고서를 쓰는 사람 | `/weekly-report` |
 | c) 스탠드업 `standup` | 어제 커밋(자동으로 읽음) + 오늘 할 일 → 어제·오늘·막힘 | 개발자 | `/standup "오늘 할 일"` |
-| d) 개발자 주간보고 `weekly-report-dev` | 지난 7일 커밋(자동으로 읽음) + 막힌 것 → 한 일·다음 주 계획·이슈 | 개발자 | `/weekly-report-dev "막힌 것"` |
+| d) 개발자 주간보고 `weekly-report-dev` | 이번 주 커밋(자동으로 읽음) + 막힌 것 → 한 일·다음 주 계획·이슈 | 개발자 | `/weekly-report-dev "막힌 것"` |
 | e) 새로 만들기 `docs/templates/skill-blank/` | 빈 틀. 입력·출력·금지 자리만 있습니다 | 반복 작업이 분명한데 위 넷에 없는 사람 | (실행할 것 없음) |
 
 a~d는 이미 동작하는 스킬을 복사해 `template.md`(출력 양식)와 지시문 두세 줄만 내 것으로 고칩니다. 대부분은 여기서 시작합니다. e는 frontmatter부터 직접 채웁니다. 어느 쪽이든 남는 파일은 `.claude/skills/<내이름>/SKILL.md`(+ `template.md`)입니다.
