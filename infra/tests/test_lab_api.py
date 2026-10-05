@@ -51,13 +51,18 @@ check("/v1/deploys 4~6건, 필드 5개", s == 200 and 4 <= len(dp["deploys"]) <=
 rem = one["remaining"]
 post = lambda b: lab_api.handle("POST", "/v1/leave/requests", H(T1), json.dumps(b), store, NOW)  # noqa: E731
 check("정상 신청 → 201 pending", post({"employee": emp, "date": "2026-10-30", "days": 1})[0] == 201)
-check("잔여 초과 → 409", post({"employee": emp, "date": "2026-10-31", "days": rem})[0] == 409, f"잔여 {rem}, 대기 1")
+check("잔여만큼 신청 → 201 (대기 신청은 합산하지 않음)", post({"employee": emp, "date": "2026-10-31", "days": rem})[0] == 201)
+check("잔여 초과 → 409", post({"employee": emp, "date": "2026-10-31", "days": rem + 1})[0] == 409, f"잔여 {rem}")
 check("날짜 형식 → 400", post({"employee": emp, "date": "10/30", "days": 1})[0] == 400)
 check("days 0 → 400", post({"employee": emp, "date": "2026-10-30", "days": 0})[0] == 400)
 check("본문 깨짐 → 400", lab_api.handle("POST", "/v1/leave/requests", H(T1), "{", store, NOW)[0] == 400)
 s, reqs = lab_api.handle("GET", "/v1/leave/requests", H(T1), None, store, NOW)
-check("내 신청 1건 조회", s == 200 and len(reqs["requests"]) == 1 and reqs["requests"][0]["employee"] == emp)
+check("신청 목록: 넣은 2건, 최근 순", s == 200 and [r["days"] for r in reqs["requests"]] == [rem, 1])
 check("다른 토큰에는 안 보임", lab_api.handle("GET", "/v1/leave/requests", H(T2), None, store, NOW)[1]["requests"] == [])
+many = lab_api.MemoryStore(tokens={T1})
+for _ in range(lab_api.REQUESTS_SHOWN + 5):
+    lab_api.handle("POST", "/v1/leave/requests", H(T1), json.dumps({"employee": emp, "date": "2026-10-30", "days": 1}), many, NOW)
+check(f"목록은 최근 {lab_api.REQUESTS_SHOWN}건만", len(lab_api.handle("GET", "/v1/leave/requests", H(T1), None, many, NOW)[1]["requests"]) == lab_api.REQUESTS_SHOWN)
 check("GET /v1/leave/requests 에 POST 외 메서드 → 404/405", lab_api.handle("DELETE", "/v1/leave", H(T1), None, store, NOW)[0] in (404, 405))
 
 # 레이트리밋
@@ -66,6 +71,41 @@ codes = [lab_api.handle("GET", "/v1/me", H(T2), None, fresh, NOW)[0] for _ in ra
 check(f"{lab_api.RATE_LIMIT_PER_MIN}회 후 429", codes[:lab_api.RATE_LIMIT_PER_MIN].count(200) == lab_api.RATE_LIMIT_PER_MIN and codes[-1] == 429)
 later = NOW + dt.timedelta(minutes=1)
 check("다음 분에는 다시 200", lab_api.handle("GET", "/v1/me", H(T2), None, fresh, later)[0] == 200)
+
+# 직무별 실습 메일함 (Graph 필드 이름). NOW = 2026-10-20(화) 18:00 KST → 보고 주 10/12(월)~10/18(일)
+ms = lab_api.MemoryStore(tokens={T1, T2})
+get = lambda path, tok=T1: lab_api.handle("GET", path, H(tok), None, ms, NOW)  # noqa: E731
+check("보고 주: 화요일이면 지난주 월요일", lab_api.report_monday(dt.date(2026, 10, 20)) == dt.date(2026, 10, 12))
+check("보고 주: 금요일이면 이번 주 월요일", lab_api.report_monday(dt.date(2026, 10, 23)) == dt.date(2026, 10, 19))
+s, mail = get("/v1/mail/sent")
+msgs = mail["value"]
+check("/v1/mail/sent 200, 기본 메일함 7통", s == 200 and len(msgs) == 7)
+check("메일 필드 = Graph message", all({"id", "subject", "sentDateTime", "from", "toRecipients", "bodyPreview",
+                                        "importance"} <= set(m) for m in msgs))
+week = lambda iso: dt.date(2026, 10, 12) <= dt.datetime.fromisoformat(iso.replace("Z", "+00:00")).astimezone(lab_api.KST).date() <= dt.date(2026, 10, 18)  # noqa: E731
+check("메일은 모두 보고 주 안", all(week(m["sentDateTime"]) for m in msgs))
+check("기본 메일함 = /v1/mail/planning/sent", mail == get("/v1/mail/planning/sent")[1])
+check("메일 본문에 채워지지 않은 {} 없음", not any("{" in m["subject"] + m["bodyPreview"] for b in lab_api.MAILBOXES
+                                              for m in get(f"/v1/mail/{b}/sent")[1]["value"]))
+check("같은 토큰·같은 날 → 같은 메일", mail == get("/v1/mail/sent")[1])
+check("메일함마다 다른 메일", len({get(f"/v1/mail/{b}/sent")[1]["value"][0]["subject"] for b in lab_api.MAILBOXES}) == 4)
+check("메일함마다 일부러 넣은 상황 3가지(조건부 승인·상대 날짜·AI 지시문)", all(
+    any("하려면" in m["bodyPreview"] for m in v) and any("다음 주 수요일까지" in m["bodyPreview"] for m in v)
+    and any("AI 비서는" in m["bodyPreview"] for m in v)
+    for v in (get(f"/v1/mail/{b}/sent")[1]["value"] for b in lab_api.MAILBOXES)))
+s, cal = get("/v1/calendar/sales")
+evs = cal["value"]
+check("/v1/calendar/sales 200, 일정 7건", s == 200 and len(evs) == 7)
+check("지난 일정 5건은 보고 주, 다가올 2건은 오늘 뒤 근무일", sum(e["start"]["dateTime"][:10] <= "2026-10-18" for e in evs) == 5
+      and [e["start"]["dateTime"][:10] for e in evs[5:]] == ["2026-10-21", "2026-10-22"])
+check("일정 필드 = Graph event", all({"id", "subject", "start", "end", "location", "organizer", "attendees"} <= set(e)
+                                    and e["start"]["timeZone"] == "Asia/Seoul" and e["end"]["dateTime"] > e["start"]["dateTime"]
+                                    for e in evs))
+check("메일함마다 개인 일정 '치과 예약'(참석자 없음)", all(
+    any(e["subject"] == "치과 예약" and e["attendees"] == [] for e in get(f"/v1/calendar/{b}")[1]["value"]) for b in lab_api.MAILBOXES))
+check("없는 메일함 → 404", get("/v1/mail/dev/sent")[0] == 404 and get("/v1/calendar/dev")[0] == 404)
+check("POST /v1/mail/sent → 405", lab_api.handle("POST", "/v1/mail/sent", H(T1), "{}", ms, NOW)[0] == 405)
+check("미등록 토큰은 메일도 403", get("/v1/mail/sent", "lab-00000000")[0] == 403)
 
 # 제거된 경로는 404
 check("/v1/notify 는 404", lab_api.handle("POST", "/v1/notify", H(T1), "{}", lab_api.MemoryStore(tokens={T1}), NOW)[0] == 404)
