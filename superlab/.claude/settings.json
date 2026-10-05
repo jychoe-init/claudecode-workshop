@@ -1,5 +1,5 @@
 {
-  "model": "opus",
+  "model": "global.anthropic.claude-opus-5-5[1m]",
   "permissions": {
     "allow": [
       "Bash(npm test *)",
@@ -9,6 +9,14 @@
       "Bash(git show *)",
       "Bash(git add *)",
       "Bash(git commit *)",
+      "Bash(python3 -m json.tool *)",
+      "Bash(python3 tools/make_skill.py *)",
+      "Bash(python3 tools/check_skill.py *)",
+      "Bash(bash tools/git_recent.sh *)",
+      "Bash(bash tools/git_week.sh *)",
+      "Edit(docs/worksheets/**)",
+      "Edit(docs/prompts/**)",
+      "Edit(tools/*_fetch.py)",
       "Edit(CLAUDE.md)",
       "Edit(README.md)",
       "mcp__hr__get_*"
@@ -23,7 +31,14 @@
       "Edit(.env*)",
       "Edit(.claude/settings.json)",
       "Edit(.claude/settings.local.json)",
+      "Read(.claude/settings.local.json)",
       "Edit(.gitignore)",
+      "Edit(.claude/skills/meeting-notes/**)",
+      "Edit(.claude/skills/weekly-report/**)",
+      "Edit(.claude/skills/standup/**)",
+      "Edit(.claude/skills/weekly-report-dev/**)",
+      "Edit(.claude/skills/review-checklist/**)",
+      "Edit(.claude/skills/workshop-coach/**)",
       "Bash(rm *)",
       "Bash(curl *)",
       "Bash(wget *)",
@@ -34,7 +49,7 @@
     "network": {
       "allowLocalBinding": true,
       "allowedDomains": [
-        "*.cloudfront.net"
+        "REPLACE-AFTER-DEPLOY.cloudfront.net"
       ]
     }
   },
