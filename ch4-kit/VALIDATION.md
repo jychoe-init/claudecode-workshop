@@ -38,8 +38,8 @@
 | 셸 | setup.sh: Git 저장소 인식(커밋 2개), 중첩 .git 없음 | PASS |  |
 | 셸 | setup.sh: Slack 질문 없음 | PASS |  |
 | 셸 | setup.sh 재실행: 토큰 등록됨 표시(앞 4자리만) | PASS |  |
-| 셸 | usage_log.sh(jq) -> usage.csv 헤더+행 | PASS | 2026-10-05T01:41:27Z,abc,default,medium,10 |
-| 셸 | usage_log.sh(jq 없음, python3 대체) 행 추가 | PASS | 2026-10-05T01:41:27Z,abc,default,medium,10 |
+| 셸 | usage_log.sh(jq) -> usage.csv 헤더+행 | PASS | 2026-10-05T02:16:46Z,abc,default,medium,10 |
+| 셸 | usage_log.sh(jq 없음, python3 대체) 행 추가 | PASS | 2026-10-05T02:16:46Z,abc,default,medium,10 |
 | 셸 | usage_log.sh 비JSON 입력에도 exit 0 | PASS |  |
 | 셸 | post-check.sh 정상 JS exit 0 / 구문 오류 JS exit 2 | PASS |  |
 | 셸 | npm test PASS | PASS | PASS |
@@ -89,7 +89,7 @@
 | 코치 | allowed-tools: Write 는 docs/worksheets/** 로만, Edit 없음 | PASS | Read, Write(docs/worksheets/**), Bash(python3 -m json.tool *), Bash(git status *), Bash(git diff *), Bash(git log *) |
 | 코치 | SKILL.md 두 원칙(에셋 쓰지 않음·비교 기준은 워크시트) + 네 역할 | PASS |  |
 | 코치 | references/lab1.md 절 9개 | PASS |  |
-| 코치 | references/lab1.md 결정마다 선택지 결과 비교 표(| 결과 |) | PASS | 4 |
+| 코치 | references/lab1.md 결정마다 선택지 결과 비교 표(| 결과 |) | PASS | 3 |
 | 코치 | references/lab2.md 절 9개 | PASS |  |
 | 코치 | references/lab2.md 결정마다 선택지 결과 비교 표(| 결과 |) | PASS | 5 |
 | 코치 | references/lab3.md 절 9개 | PASS |  |
