@@ -1,75 +1,403 @@
 <!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>워크샵 사내 API · 문서</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>superlab HR Mock API · 2026-10-06</title>
 <style>
-  :root { color-scheme: light dark; }
-  body { font: 15px/1.6 -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; max-width: 860px; margin: 40px auto; padding: 0 20px; }
-  h1 { font-size: 24px; } h2 { font-size: 18px; margin-top: 36px; border-bottom: 1px solid #8884; padding-bottom: 6px; }
-  code, pre { font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
-  pre { background: #8881; padding: 12px 14px; border-radius: 8px; overflow-x: auto; }
-  table { border-collapse: collapse; width: 100%; } th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #8884; vertical-align: top; }
-  .note { background: #ffa5001a; border-left: 3px solid orange; padding: 8px 12px; border-radius: 4px; }
-</style>
-</head>
-<body>
-<h1>워크샵 사내 API</h1>
-<p>Claude Code 워크샵 실습용 가짜 HR·배포 시스템입니다. 모든 데이터는 가짜이며 실습은 공통 토큰 하나를 함께 써서 모두 같은 팀 데이터를 봅니다.
-기본 주소는 이 페이지의 주소와 같습니다(<code>https://&lt;이 호스트&gt;/v1/...</code>).</p>
-
-<div class="note">인증: 모든 <code>/v1/*</code> 요청에 <code>Authorization: Bearer lab-xxxxxxxx</code> 헤더. 토큰은 배부받은 것을 쓰고, 저장소에 커밋하지 않습니다(<code>.claude/settings.local.json</code>의 <code>env.LAB_TOKEN</code>).</div>
-
-<h2>엔드포인트</h2>
-<table>
-<tr><th>메서드·경로</th><th>설명</th><th>응답 예</th></tr>
-<tr><td><code>GET /v1/me</code></td><td>내 토큰의 팀과 구성원</td><td><pre>{"token_hint":"lab-…","team":"payments",
- "members":[{"employee":"kim","role":"backend"}, …]}</pre></td></tr>
-<tr><td><code>GET /v1/leave</code></td><td>팀 연차 현황</td><td><pre>{"team":"payments","as_of":"2026-10-20",
- "balances":[{"employee":"kim","role":"backend",
-   "annual":15,"used":6,"remaining":9}, …]}</pre></td></tr>
-<tr><td><code>GET /v1/leave/{직원}</code></td><td>구성원 한 명의 연차</td><td><pre>{"team":"payments","employee":"kim",
- "annual":15,"used":6,"remaining":9}</pre></td></tr>
-<tr><td><code>GET /v1/leave/requests</code></td><td>신청 목록(최근 20건. 공통 토큰이라 모두의 신청이 보입니다)</td><td><pre>{"team":"payments","requests":[…]}</pre></td></tr>
-<tr><td><code>POST /v1/leave/requests</code></td><td>연차 신청(변경 동작). 본문 <code>{"employee","date","days"}</code></td><td><pre>201 {"request_id":"REQ-01234","employee":"kim",
- "date":"2026-10-30","days":1,"status":"pending"}</pre></td></tr>
-<tr><td><code>GET /v1/mail/{메일함}/sent</code><br><code>GET /v1/mail/sent</code></td><td>직무별 실습 메일함(<code>planning</code> 기획·운영 · <code>sales</code> 영업 · <code>cs</code> CS · <code>hr</code> 인사, 생략하면 planning)에서 보고 주에 보낸 메일 7통(Microsoft Graph message 형식)</td><td><pre>{"value":[{"subject":"[요청] 하반기 마케팅 예산 집행 승인",
- "sentDateTime":"2026-09-29T02:10:00Z",
- "toRecipients":[{"emailAddress":{"name":"kim", …}}],
- "bodyPreview":"…", …}]}</pre></td></tr>
-<tr><td><code>GET /v1/calendar/{메일함}</code><br><code>GET /v1/calendar</code></td><td>보고 주 일정 5건과 오늘 뒤 근무일 일정 2건(Microsoft Graph event 형식). 보고 주는 금~일이면 이번 주, 월~목이면 지난주</td><td><pre>{"value":[{"subject":"사업기획팀 주간 정례",
- "start":{"dateTime":"2026-09-28T10:00:00","timeZone":"Asia/Seoul"},
- "attendees":[…], …}]}</pre></td></tr>
-<tr><td><code>GET /v1/deploys</code></td><td>서비스별 배포 상태(개발 트랙용)</td><td><pre>{"team":"payments","deploys":[{"service":"order-api",
- "version":"v3.12.4","status":"healthy", …}]}</pre></td></tr>
-</table>
-
-<h2>오류</h2>
-<table>
-<tr><th>코드</th><th>뜻</th></tr>
-<tr><td>401 <code>unauthorized</code></td><td>헤더가 없거나 토큰 형식이 아님</td></tr>
-<tr><td>403 <code>invalid_token</code></td><td>등록되지 않았거나 만료된 토큰</td></tr>
-<tr><td>404 <code>unknown_employee</code></td><td>내 팀 구성원이 아님</td></tr>
-<tr><td>404 <code>unknown_mailbox</code></td><td>planning·sales·cs·hr 이외의 메일함</td></tr>
-<tr><td>409 <code>insufficient_balance</code></td><td>잔여보다 많이 신청</td></tr>
-<tr><td>429 <code>rate_limited</code></td><td>토큰당 분당 3000회 초과</td></tr>
-</table>
-
-<h2>Claude Code 스킬에서 쓰기</h2>
-<p>킷의 <code>tools/hr_fetch.py</code>가 이 API를 호출해 JSON을 출력합니다. 스킬 첫 줄에서 주입하면 됩니다.</p>
-<pre>!`python3 tools/hr_fetch.py leave`        # GET /v1/leave
-!`python3 tools/hr_fetch.py deploys`      # GET /v1/deploys
-!`python3 tools/hr_fetch.py me`</pre>
-<p>킷 기본 울타리가 <code>curl</code>을 차단하므로 스크립트로 호출합니다. 스크립트는 조회(GET)만 합니다.
-공용 주소가 막히면 <code>LAB_API_BASE=http://127.0.0.1:8787</code>로 바꾸고 <code>python3 tools/lab_server.py</code>를 켜면 같은 응답을 받습니다.</p>
-
-<h2>터미널에서 확인(참고)</h2>
-<pre>python3 - &lt;&lt;'EOF'
-import json, os, urllib.request
-req = urllib.request.Request(os.environ.get("LAB_API_BASE", "https://이-호스트") + "/v1/me",
-                             headers={"Authorization": "Bearer " + os.environ["LAB_TOKEN"]})
-print(json.dumps(json.load(urllib.request.urlopen(req)), ensure_ascii=False, indent=2))
-EOF</pre>
-</body>
-</html>
+:root{color-scheme:light dark;--bg:#fafbfc;--fg:#19212b;--muted:#556577;--line:#dbe1e8;--accent:#185da3;--code:#eef2f6}
+@media(prefers-color-scheme:dark){:root{--bg:#151a21;--fg:#e1e7ee;--muted:#acb8c6;--line:#35404e;--accent:#8cbbf0;--code:#202a36}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+header,main,footer{max-width:1060px;margin:auto;padding:24px}header{border-bottom:1px solid var(--line)}header p{margin:0;color:var(--muted);font-size:14px}.brand{color:var(--accent);font-weight:800;letter-spacing:.04em}
+nav{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:18px}nav a{font-size:13px}a{color:var(--accent)}h1{font-size:30px;line-height:1.35;margin:24px 0}h2{font-size:23px;border-top:1px solid var(--line);padding-top:28px;margin-top:48px}h3{font-size:18px;margin-top:32px}p,ul{margin:18px 0}li{margin:8px 0}code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;overflow-wrap:anywhere}p code,li code,td code{background:var(--code);padding:2px 4px;border-radius:3px}
+pre{background:var(--code);padding:18px;border:1px solid var(--line);border-radius:6px;overflow:auto;line-height:1.6;max-height:650px}pre code{overflow-wrap:normal}.table-scroll{overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:6px}table{border-collapse:collapse;width:100%;min-width:630px;font-size:14px}th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}th{background:var(--code)}tr:last-child td{border-bottom:0}footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line)}:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+@media(max-width:600px){header,main,footer{padding:18px}h1{font-size:25px}h2{font-size:21px}body{font-size:15px}pre{padding:12px}}
+</style></head><body>
+<header><div class="brand">superlab / API</div><p>120명 조직 · 휴가 이력 · MCP 실습 · 버전 2026-10-06</p><nav aria-label="문서 목차"><a href="#section-1">공통 계약</a><a href="#section-2">엔드포인트와 쿼리</a><a href="#section-3">제한 조회와 전체 조회</a><a href="#section-4">조직</a><a href="#section-5">직원 필드</a><a href="#section-6">연차 현황과 계산</a><a href="#section-7">휴가 이력 필드와 종류</a><a href="#section-8">실시간 신청</a><a href="#section-9">캘린더·통계</a><a href="#section-10">메일·일정·배포</a><a href="#section-11">오류</a><a href="#section-12">실제 생성 응답 예시</a></nav></header>
+<main><h1>superlab HR Mock API — 2026-10-06</h1>
+<p>회사 이름은 <code>superlab</code>(주식회사 슈퍼랩)이다. 이 API는 참가자 120명이 각각 프런트엔드를 구성할 수 있는 테스트 데이터를 제공한다. 120명의 직원 명부·휴가 기록은 토큰과 무관하게 동일하며, 내 팀은 항상 <code>growth</code>(그로스팀), <code>/v1/me.me</code>는 팀장 김민준이다. 사번·메일은 고유하며 동명이인은 존재한다.</p>
+<p>주소와 토큰은 배포된 실습 안내에서 받는다. 공개 저장소에는 실제 BaseUrl이나 토큰을 넣지 않는다. 클라이언트는 서버/MCP/로컬 프록시에서 호출한다. 브라우저 직접 호출용 CORS는 제공하지 않는다.</p>
+<h2 id="section-1">공통 계약</h2>
+<ul>
+<li>인증: <code>Authorization: Bearer &lt;LAB_TOKEN&gt;</code>. 미등록·만료 토큰은 403. CloudFront 경유 요청만 허용한다.</li>
+<li>JSON UTF-8, 날짜 <code>YYYY-MM-DD</code>, 시각 ISO 8601(시간대 포함). 날짜·연차·당일 사용 계산은 <code>Asia/Seoul</code> 기준이다.</li>
+<li>데이터 연도는 2025·2026. <code>year</code> 기본값은 조회 시점의 연도, <code>month</code> 기본값은 조회 시점의 월이다. 지원 범위 밖은 400이다.</li>
+<li>조직 코드는 아래 표 참조. <code>team</code>, <code>division</code> 필터는 코드 또는 한국어 이름, <code>all</code>을 받는다. 잘못된 필터값은 400. 여러 필터는 AND로 적용한다.</li>
+<li>직원 지정은 사번, 한국어 이름, 영문 이름, 이메일 전체, 메일 아이디의 정확한 일치(영문 대소문자 무시)다. 여러 명이면 그로스팀을 우선하고, 여전히 여러 명이면 409와 <code>candidates</code>를 반환한다. 한글·공백·메일 경로 조각은 URL 인코딩한다.</li>
+<li>레이트리밋은 토큰당 분당 6000회. API Gateway는 초당 200회, 버스트 400회다.</li>
+<li>회사·연도별 원본은 고정 시드로 생성·캐시한다. 승인·취소·부재·퇴사 상태는 매 조회 시각에 계산한다. <code>requested_at</code>이 미래인 휴가 기록은 노출하지 않는다.</li>
+<li>명부 인원은 고정 120명으로 퇴사·휴직 직원도 포함한다. 실제 근무 상태는 <code>status</code>, 날짜별 인원은 휴가 캘린더의 <code>headcount</code>로 구분한다.</li>
+</ul>
+<h2 id="section-2">엔드포인트와 쿼리</h2>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>메서드·경로</th><th>쿼리</th><th>응답</th></tr>
+<tr><td>GET <code>/v1/company</code></td><td>없음</td><td><code>name</code>, <code>legal_name</code>, <code>employee_count</code>, <code>founded_on</code>, <code>industry</code>, <code>offices</code>, <code>timezone</code>, <code>data_type</code>, <code>api_version</code></td></tr>
+<tr><td>GET <code>/v1/org</code></td><td><code>limit</code>, <code>offset</code></td><td><code>company</code>, <code>employee_count</code>, <code>divisions[]</code> → <code>teams[]</code></td></tr>
+<tr><td>GET <code>/v1/me</code></td><td><code>limit</code>, <code>offset</code></td><td><code>token_hint</code>, <code>team</code>, <code>team_name</code>, <code>me</code>(직원 객체), <code>members[]</code>, <code>api_version</code></td></tr>
+<tr><td>GET <code>/v1/employees</code></td><td><code>team</code>, <code>division</code>, <code>status</code>, <code>role</code>, <code>q</code>, <code>limit</code>, <code>offset</code></td><td><code>employees[]</code>, <code>total</code>, <code>as_of</code>. <code>q</code>는 사번·이름·메일·소속·직위·직책 부분 검색</td></tr>
+<tr><td>GET <code>/v1/employees/{직원}</code></td><td>없음</td><td>직원 객체와 <code>leave_balance</code></td></tr>
+<tr><td>GET <code>/v1/holidays</code></td><td><code>year</code>, <code>limit</code>, <code>offset</code></td><td><code>year</code>, <code>holidays[]</code>의 <code>date</code>, <code>name</code>, <code>note</code></td></tr>
+<tr><td>GET <code>/v1/leave/policy</code></td><td>없음</td><td>연차 발생·이월·종류·계산식·실시간 신청 원칙</td></tr>
+<tr><td>GET <code>/v1/leave</code></td><td><code>team</code>(기본 growth, all 가능), <code>division</code>, <code>limit</code>, <code>offset</code></td><td><code>team</code>, <code>as_of</code>, <code>balances[]</code></td></tr>
+<tr><td>GET <code>/v1/leave/{직원}</code></td><td>없음</td><td><code>as_of</code>와 연차 현황 객체. 다른 팀 직원도 조회 가능</td></tr>
+<tr><td>GET <code>/v1/leave/history</code></td><td><code>year</code>, <code>team</code>, <code>division</code>, <code>employee</code>, <code>type</code>, <code>status</code>, <code>from</code>, <code>to</code>, <code>limit</code>, <code>offset</code></td><td><code>history[]</code>, <code>year</code>, <code>as_of</code>, 페이지 메타데이터. 기간 필터는 시작~종료 구간 겹침</td></tr>
+<tr><td>GET <code>/v1/leave/calendar</code></td><td><code>month=YYYY-MM</code>, <code>team</code>, <code>division</code>, <code>limit</code>, <code>offset</code></td><td><code>month</code>, <code>as_of</code>, <code>days[]</code>, <code>alerts[]</code></td></tr>
+<tr><td>GET <code>/v1/leave/stats</code></td><td><code>year</code>, <code>team</code>, <code>division</code>, <code>limit</code>, <code>offset</code></td><td><code>summary</code>, <code>by_month[]</code>, <code>by_type[]</code>, <code>by_team[]</code>, <code>company_average</code>, <code>as_of</code></td></tr>
+<tr><td>POST <code>/v1/leave/requests</code></td><td>없음</td><td>신청 본문을 받아 201 pending. 아래 신청 계약 참조</td></tr>
+<tr><td>GET <code>/v1/leave/requests</code></td><td><code>status=pending|approved</code>, <code>employee</code>, <code>requested_by</code>, <code>team</code>, <code>limit</code>, <code>offset</code></td><td><code>team</code>, <code>requests[]</code>, <code>window_limit=500</code>, 페이지 메타데이터</td></tr>
+<tr><td>GET <code>/v1/deploys</code></td><td><code>limit</code>, <code>offset</code></td><td><code>team</code>, <code>deploys[]</code></td></tr>
+<tr><td>GET <code>/v1/mail/{box}/sent</code></td><td><code>limit</code>, <code>offset</code></td><td>Graph message 형태 <code>value[]</code>(7통). <code>/v1/mail/sent</code>는 planning</td></tr>
+<tr><td>GET <code>/v1/calendar/{box}</code></td><td><code>limit</code>, <code>offset</code></td><td>Graph event 형태 <code>value[]</code>(7건). <code>/v1/calendar</code>는 planning</td></tr>
+</table></div>
+<h2 id="section-3">제한 조회와 전체 조회</h2>
+<p>모든 목록은 <code>limit</code>, <code>offset</code>을 지원한다. 기본은 20건·숫자 최댓값은 100건이며, 휴가 이력(<code>/v1/leave/history</code>)만 기본 100건·숫자 최댓값 1000건이다. <code>limit</code>은 1 이상의 정수 또는 문자열 <code>all</code>, <code>offset</code>은 0 이상의 정수다. 잘못된 값은 400 <code>bad_query</code>다.</p>
+<ul>
+<li><code>limit=10&amp;offset=20</code>: 필터 결과의 21번째부터 최대 10건.</li>
+<li><code>limit=all</code>: 필터 결과 전체. 기본값으로 사용하지 않으며, 전체가 필요할 때 명시한다.</li>
+<li><code>limit=all&amp;offset=20</code>: 필터 결과의 21번째부터 끝까지. offset은 그대로 적용한다.</li>
+<li><code>team=all</code>은 소속 필터 해제이고, <code>limit=all</code>은 개수 제한 해제다. 전사 연차 전체는 <code>/v1/leave?team=all&amp;limit=all</code>이다.</li>
+<li>응답의 <code>total</code>은 필터 후 전체 개수, <code>limit</code>은 숫자 또는 <code>&quot;all&quot;</code>, <code>offset</code>은 시작 위치, <code>next_offset</code>은 다음 시작 위치다. 마지막 페이지 또는 all이면 next_offset은 null이다. 범위 밖 offset은 빈 목록을 반환한다.</li>
+<li>실시간 신청은 최근 500건 안에서 필터한다. <code>limit=all</code>과 <code>total</code>도 이 범위에 한정되며 <code>window_limit=500</code>을 함께 반환한다. 신청 목록은 토큰별로 분리한다.</li>
+</ul>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>경로</th><th>페이지를 나누는 목록</th></tr>
+<tr><td><code>/v1/org</code></td><td><code>divisions</code></td></tr>
+<tr><td><code>/v1/me</code></td><td><code>members</code></td></tr>
+<tr><td><code>/v1/employees</code></td><td><code>employees</code></td></tr>
+<tr><td><code>/v1/holidays</code></td><td><code>holidays</code></td></tr>
+<tr><td><code>/v1/leave</code></td><td><code>balances</code></td></tr>
+<tr><td><code>/v1/leave/history</code></td><td><code>history</code></td></tr>
+<tr><td><code>/v1/leave/calendar</code></td><td><code>days</code></td></tr>
+<tr><td><code>/v1/leave/stats</code></td><td><code>by_team</code></td></tr>
+<tr><td><code>/v1/leave/requests</code></td><td><code>requests</code></td></tr>
+<tr><td><code>/v1/deploys</code></td><td><code>deploys</code></td></tr>
+<tr><td><code>/v1/mail/{box}/sent</code></td><td><code>value</code></td></tr>
+<tr><td><code>/v1/calendar/{box}</code></td><td><code>value</code></td></tr>
+</table></div>
+<p>휴가 달력은 날짜 단위로 나누며 <code>alerts</code>는 반환된 날짜에 해당하는 경고만 포함한다. 달 전체는 <code>month=2026-10&amp;limit=all</code>로 조회한다. 통계는 <code>by_team</code>만 페이지를 나누며 <code>summary</code>, <code>company_average</code>, 12개월 <code>by_month</code>, 9종 <code>by_type</code>은 항상 동일한 전체 집계다. 회사 개요·정책·직원 상세·개인 연차는 단일 객체이므로 페이지를 나누지 않는다. 직원·연차 목록은 생성된 사번 순, 이력은 시작일·기록 ID 내림차순, 실시간 신청은 최근 접수 순이다. 실시간 목록은 새 신청이 들어오면 offset 위치가 바뀔 수 있으므로 접수 ID로 중복을 구분한다.</p>
+<pre><code data-language="text">GET /v1/employees?limit=20&amp;offset=0
+GET /v1/employees?team=growth&amp;limit=all
+GET /v1/leave?team=all&amp;limit=all
+GET /v1/leave/history?team=growth&amp;limit=10&amp;offset=0
+GET /v1/leave/calendar?month=2026-10&amp;limit=all
+GET /v1/leave/requests?requested_by=participant-01&amp;limit=all</code></pre>
+<p>MCP 조회 도구도 <code>limit</code>, <code>offset</code>을 받고 응답의 페이지 정보를 유지한다. <code>get_leave_requests</code>에는 <code>employee</code>, <code>team</code>, <code>status</code>, <code>requested_by</code> 필터도 있다. 도구 개수는 기존 6개다.</p>
+<h2 id="section-4">조직</h2>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>부문 코드</th><th>팀 코드·이름·인원</th></tr>
+<tr><td>executive / 경영진</td><td>대표이사 1명(team=null), ceo-office / 대표이사실 1명(비서실장)</td></tr>
+<tr><td>product / 제품개발부문</td><td>부문장 1명(team=null), platform / 플랫폼 11, payments / 결제 9, frontend / 프론트엔드 8, data / 데이터 10, growth / 그로스 8</td></tr>
+<tr><td>business / 사업부문</td><td>부문장 1명(team=null), planning / 사업기획 8, sales1 / 영업1 10, sales2 / 영업2 8, marketing / 마케팅 8, cs / 고객지원 12</td></tr>
+<tr><td>corporate / 경영지원부문</td><td>부문장 1명(team=null), hr / 인사 7, finance / 재무 7, legal / 법무 4, general / 총무 5</td></tr>
+</table></div>
+<p>조직 응답의 부문은 <code>code</code>, <code>name</code>, <code>headcount</code>, <code>head_id</code>, <code>head</code>, <code>teams</code>를 갖는다. 팀은 <code>code</code>, <code>name</code>, <code>headcount</code>, <code>leader_id</code>, <code>leader</code>, <code>leader_vacant</code>를 갖는다. 법무팀은 팀장 공석으로 leader가 null이며 부문장에게 보고한다.</p>
+<h2 id="section-5">직원 필드</h2>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>필드</th><th>형식·의미</th></tr>
+<tr><td><code>id</code></td><td>문자열. <code>SL{입사연도2자리}{3자리 순번}</code></td></tr>
+<tr><td><code>name</code>, <code>name_en</code></td><td>한국어 표시 이름, 영문 이름. 김지훈 동명이인과 장문 이름 알렉산드라 페트로바 포함</td></tr>
+<tr><td><code>email</code>, <code>extension</code></td><td><code>given.surname@superlab.example</code>, 중복 시 숫자 접미사. 내선은 문자열</td></tr>
+<tr><td><code>division</code>, <code>division_name</code>, <code>team</code>, <code>team_name</code></td><td>부문·팀 코드와 표시 이름. 대표이사·부문장의 team/team_name은 null</td></tr>
+<tr><td><code>title</code>, <code>position</code></td><td>직위·직급(사원~부장, 이사·상무·대표이사), 직책(팀원·팀장·부문장·비서실장·대표이사)</td></tr>
+<tr><td><code>role</code>, <code>role_label</code></td><td>직무 코드·한국어 이름. backend, frontend, data, pm, qa, sre, planning, sales, marketing, cs, hr, finance, legal, general, ceo, division_head, secretary</td></tr>
+<tr><td><code>employment_type</code></td><td>regular / contract / intern</td></tr>
+<tr><td><code>joined_on</code>, <code>contract_end</code>, <code>last_day</code></td><td>입사일, 계약 종료일(null 가능), 마지막 근무일(null 가능)</td></tr>
+<tr><td><code>manager_id</code>, <code>manager</code></td><td>보고 대상 사번·이름. 대표이사는 null</td></tr>
+<tr><td><code>office</code></td><td><code>code</code>(hq/pangyo/busan), <code>name</code>, <code>address</code>, <code>zip</code> 문자열</td></tr>
+<tr><td><code>home_area</code></td><td>거주 시·구. 상세 거주지 주소는 제공하지 않음</td></tr>
+<tr><td><code>work_type</code></td><td>office / hybrid / remote</td></tr>
+<tr><td><code>status</code></td><td>active / on_leave(승인된 육아휴직 기간) / leaving(퇴사 예정 월) / resigned(마지막 근무일 또는 계약 종료일 다음 날부터)</td></tr>
+<tr><td><code>leave_balance</code></td><td>아래 연차 현황 중 숫자·발생·만료·미차감 집계 필드. 직원 목록에는 history를 중복 포함하지 않음</td></tr>
+</table></div>
+<h2 id="section-6">연차 현황과 계산</h2>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>필드</th><th>의미</th></tr>
+<tr><td><code>employee</code>, <code>employee_id</code>, <code>team</code>, <code>team_name</code></td><td>직원 이름·사번·소속</td></tr>
+<tr><td><code>role</code>, <code>role_label</code>, <code>title</code>, <code>position</code></td><td>직무·직위·직책</td></tr>
+<tr><td><code>annual</code>, <code>accrual</code></td><td>조회 시점 발생 일수. monthly / yearly</td></tr>
+<tr><td><code>carried_over</code>, <code>total</code></td><td>전년도 이월, 발생+이월</td></tr>
+<tr><td><code>used</code>, <code>scheduled</code>, <code>pending</code></td><td>승인된 차감 휴가 중 오늘까지 사용, 내일 이후 예정, 아직 승인 대기인 차감 일수</td></tr>
+<tr><td><code>remaining</code>, <code>expiring</code>, <code>expires_on</code></td><td>사용할 수 있는 잔여, 이월 한도 초과분, 해당 연도 12월 31일</td></tr>
+<tr><td><code>usage_rate</code></td><td>used/total×100, 소수 둘째 자리 반올림. total=0이면 0</td></tr>
+<tr><td><code>other_used</code></td><td>미차감 종류별 오늘까지 사용 일수. 예: <code>{&quot;official&quot;:1,&quot;sick&quot;:2}</code></td></tr>
+<tr><td><code>history</code></td><td>해당 연도와 겹치는 신청된 기록의 간단 목록. <code>start</code>, <code>end</code>, <code>days</code>, <code>type</code>, <code>status</code></td></tr>
+</table></div>
+<pre><code data-language="text">근속연수 = 입사일 기준 만 나이 방식으로 계산
+입사 1년 미만: annual = min(11, 입사일 기준 만근한 개월 수)
+입사 1년 이상: annual = min(25, 15 + max(0, floor((근속연수 - 1) / 2)))
+carried_over = min(3, 전년도 말 remaining)  # 2025는 0, 2026은 2025 기록으로 계산
+ total = annual + carried_over
+ remaining = total - used - scheduled - pending
+ expiring = max(0, remaining - 3)
+ usage_rate = used / total * 100</code></pre>
+<p>당일은 사용일에 포함한다. 여러 날의 승인 건은 영업일별로 분할하여 used/scheduled를 나눈다. pending은 기간이 지났어도 승인 전까지 따로 예약한다. 반려·취소는 잔액을 차감하지 않는다. 미차감 휴가는 other_used에만 합산한다. 미래 연도 통계는 해당 연도에 걸친 기록만 합산한다. 퇴사자의 발생 기준일은 마지막 근무일로 제한한다. 이는 워크샵 Mock 정책이며 실제 급여·법정 연차 산정 지침이 아니다.</p>
+<h2 id="section-7">휴가 이력 필드와 종류</h2>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>필드</th><th>의미</th></tr>
+<tr><td><code>id</code>, <code>employee_id</code>, <code>employee</code>, <code>team</code></td><td>기록 ID, 사번, 이름, 팀 코드</td></tr>
+<tr><td><code>type</code>, <code>type_label</code>, <code>deducted</code></td><td>종류, 표시명, 연차 차감 여부(bool)</td></tr>
+<tr><td><code>start</code>, <code>end</code>, <code>days</code></td><td>시작·종료(양 끝 포함), 주말·업무 달력 휴일을 제외한 영업일수</td></tr>
+<tr><td><code>status</code>, <code>status_label</code></td><td>pending/approved/rejected/cancelled, 승인 대기/승인/반려/취소</td></tr>
+<tr><td><code>reason</code>, <code>rejection_reason</code></td><td>사유, 반려 후에만 표시하는 반려 사유(그 외 null)</td></tr>
+<tr><td><code>requested_at</code>, <code>decided_at</code>, <code>cancelled_at</code></td><td>신청·결정·취소 시각. 결정 전/취소 전에는 해당 시각을 null로 표시</td></tr>
+<tr><td><code>approver_id</code>, <code>approver</code></td><td>결재자 사번·이름, 대표이사 본인은 null</td></tr>
+<tr><td><code>when</code></td><td>past(종료일&lt;오늘), ongoing(기간에 오늘 포함), upcoming(시작일&gt;오늘)</td></tr>
+</table></div>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>type</th><th>표시명</th><th>연차 차감</th><th>일수</th></tr>
+<tr><td>annual</td><td>연차</td><td>예</td><td>기본 1. 기존 호환으로 0.25 단위 신청도 가능</td></tr>
+<tr><td>half_am / half_pm</td><td>오전/오후 반차</td><td>예</td><td>반드시 0.5</td></tr>
+<tr><td>quarter</td><td>반반차</td><td>예</td><td>반드시 0.25</td></tr>
+<tr><td>sick</td><td>병가</td><td>아니오</td><td>영업일수</td></tr>
+<tr><td>official</td><td>공가</td><td>아니오</td><td>건강검진 등</td></tr>
+<tr><td>family_event</td><td>경조휴가</td><td>아니오</td><td>기록은 결혼 5일·조부모상 3일·배우자 출산 10일</td></tr>
+<tr><td>refresh</td><td>리프레시 휴가</td><td>아니오</td><td>기록은 근속 5년 단위 5일</td></tr>
+<tr><td>parental</td><td>육아휴직</td><td>아니오</td><td>데이터팀 2026-06-01~2027-05-31 기록 포함</td></tr>
+</table></div>
+<p>업무 달력은 <code>/v1/holidays</code>에서 확인한다. 2025-05-01도 회사 유급휴일로 제외한다. 2026-07-17은 휴일이며, 2026-09-28과 2026-06-08은 평일이다. 육아휴직의 전체 days에는 2027-05-31까지의 업무 달력을 적용하고 연도별 집계에는 해당 연도 날짜만 포함한다.</p>
+<h2 id="section-8">실시간 신청</h2>
+<pre><code data-language="json">{&quot;employee&quot;:&quot;김민준&quot;,&quot;date&quot;:&quot;2026-10-20&quot;,&quot;days&quot;:0.5,&quot;type&quot;:&quot;half_pm&quot;,&quot;reason&quot;:&quot;개인 일정&quot;,&quot;requested_by&quot;:&quot;participant-01&quot;}</code></pre>
+<p>필수는 employee/date/days, type 기본 annual, reason 기본 빈 문자열(최대 100자), requested_by 기본 빈 문자열(최대 30자)이다. 본문 requested_by가 없으면 <code>X-Lab-User</code>를 사용한다. MCP는 <code>LAB_USER</code> 환경 변수를 이 헤더로 보낸다. 이는 참가자 식별용 표시값으로 인증·접근 통제를 대신하지 않는다.</p>
+<ul>
+<li>days는 유한 숫자, 0 초과 366 이하, 0.25 단위. 반차·반반차는 지정 일수만, 미차감 종류는 정수만 받는다. date는 2025~2026년의 유효한 날짜여야 하며, 계산된 종료일은 지원 업무 달력의 마지막 날인 2027-05-31을 넘을 수 없다.</li>
+<li>퇴사자는 409 <code>employee_resigned</code>. 차감 종류가 현재 remaining보다 크면 409 <code>insufficient_balance</code>. 경조/리프레시 종류의 세부 자격·일수 제한은 실시간 신청에서 강제하지 않는다.</li>
+<li>주말·휴일·과거·승인/대기 기록과 겹침은 각각 <code>weekend</code>, <code>holiday</code>, <code>past_date</code>, <code>overlap</code> 경고를 반환한다. 201 신청은 유지한다. 휴일 시작 날짜를 보존하고 다음 영업일부터 days를 배분하여 end를 계산한다.</li>
+<li>201 응답은 <code>request_id=REQ-</code>+영문 대문자/숫자 6자리, <code>employee</code>, <code>employee_id</code>, <code>date</code>, <code>start</code>, <code>end</code>, <code>days</code>, <code>type</code>, <code>type_label</code>, <code>deducted</code>, <code>team</code>, <code>team_name</code>, <code>approver_id</code>, <code>approver</code>, <code>reason</code>, <code>requested_by</code>, <code>status</code>, <code>status_label</code>, <code>requested_at</code>, <code>decided_at</code>, <code>warnings[]</code>다. 경고는 <code>{code,message}</code> 객체다.</li>
+<li>저장 상태는 pending. 조회 시 신청 후 2분(3일 이상은 10분)이 지나면 approved와 decided_at을 계산하여 반환한다. 예약 작업이나 실제 승인 처리는 없다.</li>
+<li><strong>실시간 신청은 잔액·고정 휴가 이력·캘린더·통계에 반영하지 않는다.</strong> 참가자끼리 서로의 실습을 막지 않기 위해서다. 접수 ID로 실시간 신청 목록에서 확인한다. API로 신청 취소는 지원하지 않는다.</li>
+</ul>
+<h2 id="section-9">캘린더·통계</h2>
+<p>캘린더 <code>days[]</code>에는 date, is_business_day, holiday(null 가능), absentees[], teams[]가 있다. 부재자는 employee_id, employee, team, type, type_label, days(당일 1/0.5/0.25)를 갖는다. 승인 건만 포함한다. 팀 집계는 team, team_name, headcount(그날 재직 인원), absent_count(부재자 고유 인원), absence_rate(인원 비율 %)다. 반차도 부재 인원 1명으로 세며, 40% 이상이면 alerts에 date·팀 집계·message를 넣는다.</p>
+<p>통계 summary/company_average/by_team의 집계는 headcount, annual, carried_over, total, used, scheduled, pending, remaining, expiring, usage_rate다. 회사 평균은 필터와 무관하게 120명 전체 used/total로 가중 계산한다. by_team에는 팀 미소속 임원(null)도 포함한다. by_month는 12개월 각각 month, used, scheduled, other_used, usage_rate, by_type은 type, type_label, deducted, used, scheduled, usage_rate를 갖는다. 월/차감 종류의 사용률 분모는 선택 범위의 total이며, 미차감 종류의 usage_rate는 null이다. pending은 summary에만 별도로 합산한다.</p>
+<h2 id="section-10">메일·일정·배포</h2>
+<p>메일함은 planning→사업기획팀, sales→영업2팀, cs→고객지원팀, hr→인사팀이다. from/organizer는 해당 팀장, toRecipients/attendees 및 본문의 담당자는 해당 팀 실명·메일을 사용한다. 보고 주는 금~일이면 이번 주, 월~목이면 지난주이며, 과거 일정 5건과 오늘 뒤 영업일 일정 2건을 제공한다. 조건부 승인·상대 날짜·전달 메일 속 AI 지시문, 참석자 없는 치과 예약을 실습 상황으로 유지한다.</p>
+<p>메일은 id, subject, sentDateTime(UTC), from.emailAddress{name,address}, toRecipients[], bodyPreview, importance를 제공한다. 일정은 id, subject, start/end{dateTime,timeZone}, location.displayName, organizer.emailAddress, attendees[]{emailAddress,type}를 제공한다. 배포 항목은 기존 5개 필드 service, version, status, deployed_at, deployed_by만 제공하며 deployed_by는 제품개발부문 직원 이름이다.</p>
+<h2 id="section-11">오류</h2>
+<p>오류 형식은 <code>{&quot;error&quot;:&quot;코드&quot;,&quot;message&quot;:&quot;설명&quot;}</code>이다. ambiguous_employee는 candidates[], insufficient_balance는 remaining을 추가한다.</p>
+<div class="table-scroll" tabindex="0"><table>
+<tr><th>HTTP</th><th>error</th><th>의미</th></tr>
+<tr><td>400</td><td>bad_json</td><td>잘못된 JSON 또는 객체가 아닌 본문</td></tr>
+<tr><td>400</td><td>bad_employee / bad_date / bad_days / bad_type</td><td>필수 직원 식별자·날짜·일수·종류 오류</td></tr>
+<tr><td>400</td><td>bad_reason / bad_requested_by</td><td>문자열 길이 또는 자료형 오류</td></tr>
+<tr><td>400</td><td>bad_query</td><td>필터·페이지·연도·월 값 오류</td></tr>
+<tr><td>401</td><td>unauthorized</td><td>토큰 헤더 없음·형식 오류</td></tr>
+<tr><td>403</td><td>invalid_token / forbidden</td><td>토큰 미등록·만료 / CloudFront 외부 직접 호출</td></tr>
+<tr><td>404</td><td>unknown_employee / unknown_mailbox / not_found</td><td>직원·메일함·경로 없음</td></tr>
+<tr><td>405</td><td>not_found</td><td>알려진 리소스의 미지원 메서드</td></tr>
+<tr><td>409</td><td>ambiguous_employee / employee_resigned / insufficient_balance</td><td>동명이인 / 퇴사 / 잔여 부족</td></tr>
+<tr><td>429</td><td>rate_limited</td><td>토큰 분당 호출 제한 초과</td></tr>
+</table></div>
+<p>API Gateway가 자체 스로틀로 반환하는 429는 위 코어 오류 형식과 다를 수 있다.</p>
+<h2 id="section-12">실제 생성 응답 예시</h2>
+<p>아래는 고정 조회 시각 <code>2026-10-06T18:00:00+09:00</code>으로 생성한 응답이다. 시각에 따라 수치는 달라지므로 실제 응답의 as_of와 숫자를 사용한다.</p>
+<h3>직원 상세</h3>
+<p><code>GET /v1/employees/김민준</code></p>
+<pre><code data-language="json">{
+  &quot;id&quot;: &quot;SL15044&quot;,
+  &quot;name&quot;: &quot;김민준&quot;,
+  &quot;name_en&quot;: &quot;Minjun Kim&quot;,
+  &quot;email&quot;: &quot;minjun.kim@superlab.example&quot;,
+  &quot;extension&quot;: &quot;2044&quot;,
+  &quot;division&quot;: &quot;product&quot;,
+  &quot;division_name&quot;: &quot;제품개발부문&quot;,
+  &quot;team&quot;: &quot;growth&quot;,
+  &quot;team_name&quot;: &quot;그로스팀&quot;,
+  &quot;title&quot;: &quot;과장&quot;,
+  &quot;position&quot;: &quot;팀장&quot;,
+  &quot;role&quot;: &quot;pm&quot;,
+  &quot;role_label&quot;: &quot;프로덕트 매니저&quot;,
+  &quot;employment_type&quot;: &quot;regular&quot;,
+  &quot;joined_on&quot;: &quot;2015-06-15&quot;,
+  &quot;contract_end&quot;: null,
+  &quot;last_day&quot;: null,
+  &quot;manager_id&quot;: &quot;SL22002&quot;,
+  &quot;manager&quot;: &quot;이은서&quot;,
+  &quot;office&quot;: {
+    &quot;code&quot;: &quot;pangyo&quot;,
+    &quot;name&quot;: &quot;판교 연구소&quot;,
+    &quot;address&quot;: &quot;경기도 성남시 분당구 판교역로 166, 슈퍼랩 오피스 8층&quot;,
+    &quot;zip&quot;: &quot;13529&quot;
+  },
+  &quot;home_area&quot;: &quot;서울특별시 송파구&quot;,
+  &quot;work_type&quot;: &quot;office&quot;,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;leave_balance&quot;: {
+    &quot;annual&quot;: 20,
+    &quot;carried_over&quot;: 3,
+    &quot;total&quot;: 23,
+    &quot;used&quot;: 9.5,
+    &quot;scheduled&quot;: 0,
+    &quot;pending&quot;: 0,
+    &quot;remaining&quot;: 13.5,
+    &quot;expiring&quot;: 10.5,
+    &quot;expires_on&quot;: &quot;2026-12-31&quot;,
+    &quot;usage_rate&quot;: 41.3,
+    &quot;other_used&quot;: {
+      &quot;official&quot;: 1
+    },
+    &quot;accrual&quot;: &quot;yearly&quot;
+  }
+}</code></pre>
+<h3>개인 연차</h3>
+<p><code>GET /v1/leave/김민준</code></p>
+<pre><code data-language="json">{
+  &quot;as_of&quot;: &quot;2026-10-06&quot;,
+  &quot;employee&quot;: &quot;김민준&quot;,
+  &quot;employee_id&quot;: &quot;SL15044&quot;,
+  &quot;team&quot;: &quot;growth&quot;,
+  &quot;team_name&quot;: &quot;그로스팀&quot;,
+  &quot;role&quot;: &quot;pm&quot;,
+  &quot;role_label&quot;: &quot;프로덕트 매니저&quot;,
+  &quot;title&quot;: &quot;과장&quot;,
+  &quot;position&quot;: &quot;팀장&quot;,
+  &quot;annual&quot;: 20,
+  &quot;carried_over&quot;: 3,
+  &quot;total&quot;: 23,
+  &quot;used&quot;: 9.5,
+  &quot;scheduled&quot;: 0,
+  &quot;pending&quot;: 0,
+  &quot;remaining&quot;: 13.5,
+  &quot;expiring&quot;: 10.5,
+  &quot;expires_on&quot;: &quot;2026-12-31&quot;,
+  &quot;usage_rate&quot;: 41.3,
+  &quot;other_used&quot;: {
+    &quot;official&quot;: 1
+  },
+  &quot;accrual&quot;: &quot;yearly&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;start&quot;: &quot;2026-02-04&quot;,
+      &quot;end&quot;: &quot;2026-02-04&quot;,
+      &quot;days&quot;: 0.25,
+      &quot;type&quot;: &quot;quarter&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-02-10&quot;,
+      &quot;end&quot;: &quot;2026-02-10&quot;,
+      &quot;days&quot;: 0.5,
+      &quot;type&quot;: &quot;half_am&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-02-19&quot;,
+      &quot;end&quot;: &quot;2026-02-19&quot;,
+      &quot;days&quot;: 1,
+      &quot;type&quot;: &quot;annual&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-04-16&quot;,
+      &quot;end&quot;: &quot;2026-04-16&quot;,
+      &quot;days&quot;: 1,
+      &quot;type&quot;: &quot;official&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-05-14&quot;,
+      &quot;end&quot;: &quot;2026-05-14&quot;,
+      &quot;days&quot;: 0.5,
+      &quot;type&quot;: &quot;half_am&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-06-08&quot;,
+      &quot;end&quot;: &quot;2026-06-08&quot;,
+      &quot;days&quot;: 1,
+      &quot;type&quot;: &quot;annual&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-07-02&quot;,
+      &quot;end&quot;: &quot;2026-07-02&quot;,
+      &quot;days&quot;: 1,
+      &quot;type&quot;: &quot;annual&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-07-20&quot;,
+      &quot;end&quot;: &quot;2026-07-22&quot;,
+      &quot;days&quot;: 3,
+      &quot;type&quot;: &quot;annual&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-07-24&quot;,
+      &quot;end&quot;: &quot;2026-07-24&quot;,
+      &quot;days&quot;: 1,
+      &quot;type&quot;: &quot;annual&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-09-23&quot;,
+      &quot;end&quot;: &quot;2026-09-23&quot;,
+      &quot;days&quot;: 0.25,
+      &quot;type&quot;: &quot;quarter&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    },
+    {
+      &quot;start&quot;: &quot;2026-10-06&quot;,
+      &quot;end&quot;: &quot;2026-10-06&quot;,
+      &quot;days&quot;: 1,
+      &quot;type&quot;: &quot;annual&quot;,
+      &quot;status&quot;: &quot;approved&quot;
+    }
+  ]
+}</code></pre>
+<h3>휴가 이력 1건</h3>
+<p><code>GET /v1/leave/history?team=growth&amp;limit=1</code></p>
+<pre><code data-language="json">{
+  &quot;year&quot;: 2026,
+  &quot;as_of&quot;: &quot;2026-10-06T18:00:00+09:00&quot;,
+  &quot;history&quot;: [
+    {
+      &quot;id&quot;: &quot;LV-2026-SL18047-001&quot;,
+      &quot;employee_id&quot;: &quot;SL18047&quot;,
+      &quot;employee&quot;: &quot;최수빈&quot;,
+      &quot;team&quot;: &quot;growth&quot;,
+      &quot;type&quot;: &quot;annual&quot;,
+      &quot;type_label&quot;: &quot;연차&quot;,
+      &quot;deducted&quot;: true,
+      &quot;start&quot;: &quot;2026-10-26&quot;,
+      &quot;end&quot;: &quot;2026-10-28&quot;,
+      &quot;days&quot;: 3,
+      &quot;status&quot;: &quot;pending&quot;,
+      &quot;reason&quot;: &quot;가을 휴가&quot;,
+      &quot;requested_at&quot;: &quot;2026-10-01T09:00:00+09:00&quot;,
+      &quot;decided_at&quot;: null,
+      &quot;approver_id&quot;: &quot;SL15044&quot;,
+      &quot;approver&quot;: &quot;김민준&quot;,
+      &quot;rejection_reason&quot;: null,
+      &quot;cancelled_at&quot;: null,
+      &quot;status_label&quot;: &quot;승인 대기&quot;,
+      &quot;when&quot;: &quot;upcoming&quot;
+    }
+  ],
+  &quot;total&quot;: 78,
+  &quot;limit&quot;: 1,
+  &quot;offset&quot;: 0,
+  &quot;next_offset&quot;: 1
+}</code></pre>
+<h3>반차 신청 결과</h3>
+<p><code>POST /v1/leave/requests</code> → 201</p>
+<pre><code data-language="json">{
+  &quot;request_id&quot;: &quot;REQ-VTNMJ7&quot;,
+  &quot;employee&quot;: &quot;김민준&quot;,
+  &quot;employee_id&quot;: &quot;SL15044&quot;,
+  &quot;date&quot;: &quot;2026-10-20&quot;,
+  &quot;start&quot;: &quot;2026-10-20&quot;,
+  &quot;end&quot;: &quot;2026-10-20&quot;,
+  &quot;days&quot;: 0.5,
+  &quot;type&quot;: &quot;half_pm&quot;,
+  &quot;type_label&quot;: &quot;오후 반차&quot;,
+  &quot;deducted&quot;: true,
+  &quot;team&quot;: &quot;growth&quot;,
+  &quot;team_name&quot;: &quot;그로스팀&quot;,
+  &quot;approver_id&quot;: &quot;SL22002&quot;,
+  &quot;approver&quot;: &quot;이은서&quot;,
+  &quot;reason&quot;: &quot;개인 일정&quot;,
+  &quot;requested_by&quot;: &quot;participant-01&quot;,
+  &quot;status&quot;: &quot;pending&quot;,
+  &quot;status_label&quot;: &quot;승인 대기&quot;,
+  &quot;requested_at&quot;: &quot;2026-10-06T18:00:00+09:00&quot;,
+  &quot;decided_at&quot;: null,
+  &quot;warnings&quot;: []
+}</code></pre></main><footer>기본 주소는 현재 페이지의 호스트입니다. 인증 토큰은 배포된 실습 안내에서 확인하세요. · 원본: infra/API.md</footer>
+</body></html>
