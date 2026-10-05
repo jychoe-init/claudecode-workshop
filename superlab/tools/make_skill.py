@@ -23,7 +23,7 @@ import shutil
 import sys
 from pathlib import Path
 
-PROTECTED = {"meeting-notes", "weekly-report", "standup", "weekly-report-dev", "review-checklist", "leave-report", "prompt-coach", "workshop-coach"}
+PROTECTED = {"meeting-notes", "weekly-report", "standup", "weekly-report-dev", "review-checklist", "workshop-coach"}
 MARK = ".made-by-coach"
 NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,40}$")
 
