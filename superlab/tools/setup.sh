@@ -21,12 +21,13 @@ node --version >/dev/null 2>&1 && echo "node $(node --version) 확인" || echo "
 python3 --version >/dev/null 2>&1 && echo "$(python3 --version) 확인" || echo "python3 없음: tools/ 스크립트에 필요합니다."
 command -v jq >/dev/null 2>&1 && echo "jq 확인" || echo "jq 없음(선택): 훅 스크립트는 python3로 대체 동작합니다."
 
-if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+# 전역 git 설정이 없어도 커밋할 수 있게 저장소 안에만 기본값을 둔다(이미 있으면 유지)
+git rev-parse --is-inside-work-tree >/dev/null 2>&1 || git init -q
+git config user.name  >/dev/null 2>&1 || git config user.name  "lab"
+git config user.email >/dev/null 2>&1 || git config user.email "lab@example.com"
+if [[ -n "$(git rev-list -n1 HEAD 2>/dev/null)" ]]; then
   echo "Git 저장소 확인: 커밋 $(git rev-list --count HEAD 2>/dev/null || echo 0)개 (최근: $(git log -1 --pretty=%s 2>/dev/null))"
 else
-  git init -q
-  git config user.name  >/dev/null 2>&1 || git config user.name  "lab"
-  git config user.email >/dev/null 2>&1 || git config user.email "lab@example.com"
   git add -A -- . ':!samples' && git commit -q -m "chore: team starter kit scaffold"
   git add -A samples && git commit -q -m "feat: add meeting and weekly-report samples"
   echo "Git 초기화 완료: 커밋 2개"
